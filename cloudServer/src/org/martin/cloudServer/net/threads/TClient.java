@@ -55,6 +55,8 @@ public class TClient extends Thread implements Transmissible, Receivable{
             try {
                 // Queda pendiente las operaciones con el cloud
                 // ya que deben hacerse por comandos
+                
+                
                 Thread.sleep(300);
             } catch (InterruptedException ex) {
                 Logger.getLogger(TClient.class.getName()).log(Level.SEVERE, null, ex);

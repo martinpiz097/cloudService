@@ -15,46 +15,63 @@ import java.util.LinkedList;
  */
 public class Folder extends File{
     
-    private final LinkedList<File> archives;
-
-    public Folder(LinkedList<File> archives, String pathname) {
+    private final LinkedList<Archive> archives;
+    private final LinkedList<Folder> folders;
+    
+    public Folder(LinkedList<Archive> archives, String pathname) {
         super(pathname);
         this.archives = archives;
+        this.folders = new LinkedList<>();
     }
 
-    public Folder(LinkedList<File> archives, String parent, String child) {
+    public Folder(LinkedList<Archive> archives, String parent, String child) {
         super(parent, child);
         this.archives = archives;
+        this.folders = new LinkedList<>();
     }
 
-    public Folder(LinkedList<File> archives, File parent, String child) {
+    public Folder(LinkedList<Archive> archives, File parent, String child) {
         super(parent, child);
         this.archives = archives;
+        this.folders = new LinkedList<>();
     }
 
-    public Folder(LinkedList<File> archives, URI uri) {
+    public Folder(LinkedList<Archive> archives, URI uri) {
         super(uri);
         this.archives = archives;
+        this.folders = new LinkedList<>();
     }
 
     public Folder(String pathname) {
         super(pathname);
         this.archives = new LinkedList<>();
+        this.folders = new LinkedList<>();
     }
 
     public Folder(String parent, String child) {
         super(parent, child);
         this.archives = new LinkedList<>();
+        this.folders = new LinkedList<>();
     }
 
     public Folder(File parent, String child) {
         super(parent, child);
         this.archives = new LinkedList<>();
+        this.folders = new LinkedList<>();
     }
 
     public Folder(URI uri) {
         super(uri);
         this.archives = new LinkedList<>();
+        this.folders = new LinkedList<>();
+    }
+    
+    public boolean hasFolders(){
+        return !folders.isEmpty();
+    }
+    
+    public boolean hasArchives(){
+        return !archives.isEmpty();
     }
     
     public void addArchive(Archive a){
@@ -62,18 +79,27 @@ public class Folder extends File{
     }
     
     public void addFolder(Folder f){
-        archives.add(f);
+        folders.add(f);
     }
     
-    public LinkedList<File> getAll() {
+    public int getListsCount(){
+        return archives.size() + folders.size();
+    }
+    
+    public LinkedList<Archive> getArchives() {
         return archives;
     }
-    
-    public LinkedList<Folder> getFolders(){
-        LinkedList<Folder> folders = new LinkedList<>();
+
+    public LinkedList<Folder> getFolders() {
+        return folders;
     }
-    public void clear(){
+    
+    public void clearListArchives(){
         archives.clear();
+    }
+    
+    public void clearListFolders(){
+        folders.clear();
     }
     
 }

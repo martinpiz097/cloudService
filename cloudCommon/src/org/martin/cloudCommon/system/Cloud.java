@@ -11,9 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,11 +24,7 @@ import org.martin.cloudCommon.model.User;
 public class Cloud implements Serializable{
     
     private final File rootDirectory;
-    // Todos los espacios son en bytes
-    private long usedSpace;
-    private long totalSpace;
-    private final Date creationDate;
-    private static transient Calendar c;
+    private final CloudInfo info;
     private transient FileInputStream reader;
     private transient FileOutputStream writer;
     
@@ -38,10 +32,7 @@ public class Cloud implements Serializable{
         rootDirectory = new File(SysInfo.ROOT_FOLDER_NAME + "/" + 
                 ownerUser.getId() + ownerUser.getNick() + "/");
         if(!rootDirectory.exists()) rootDirectory.mkdir();
-        usedSpace = 0;
-        totalSpace = SysInfo.TOTAL_SPACE;
-        c = new GregorianCalendar();
-        creationDate = c.getTime();
+        info = new CloudInfo(SysInfo.TOTAL_SPACE);
     }
 
     // El goBack se puede hacer desde el cliente guardando la ruta actual
@@ -60,6 +51,22 @@ public class Cloud implements Serializable{
     public boolean validateNewFile(String newFolder, String nameFile){
         return !Arrays.stream(getFiles(newFolder))
                 .anyMatch(f -> f.getName().equalsIgnoreCase(nameFile));
+    }
+
+    
+    /**
+     * Evalua si hay espacio suficiente para poder insertar más archivos
+     * @param fileLenght tamaño del archivo que se desea insertar
+     * @return true si el espacio disponible permite incluir más archivos; falso
+     * en caso contrario
+     */
+    
+    public boolean isNewFilePermitted(long fileLenght){
+        return fileLenght <= getAvailableSpace();
+    }
+
+    public CloudInfo getInfo() {
+        return info;
     }
     
     /**
@@ -107,6 +114,7 @@ public class Cloud implements Serializable{
             }
         });
         writer.close();
+        addFile(file.length());
     }
 
     /**
@@ -198,6 +206,7 @@ public class Cloud implements Serializable{
         }
         writer.close();
         reader.close();
+        addFile(newFile.length());
     }
     
     /**
@@ -254,7 +263,10 @@ public class Cloud implements Serializable{
      */
     public void deleteFile(String path){
         final File toDelete = getFile(path);
-        if (toDelete != null) toDelete.delete();
+        if (toDelete != null) {
+            removeFile(toDelete.length());
+            toDelete.delete();
+        }
     }
     
     /**
@@ -330,8 +342,14 @@ public class Cloud implements Serializable{
      * @throws IOException en caso de existir problemas al subir cada uno de sus archivos
      */
     public void uploadFolder(Folder folder) throws IOException{
-        for (Archive archive : folder.getAll())
-            uploadFile(archive);
+        File localFld;
+        
+        if (folder.hasFolders()) {
+            for (Folder fld : folder.getFolders()){
+                localFld = new File(fld.getCanonicalPath());
+            }
+            
+        }
     }
     
     /**
@@ -445,28 +463,6 @@ public class Cloud implements Serializable{
     }
     
     // ../ Comando para regresar a carpeta anterior
-    public File goToFolder(File currentFolder, String folderName){
-        if (currentFolder.getAbsolutePath().equalsIgnoreCase(rootDirectory.getAbsolutePath()) && 
-                folderName.equalsIgnoreCase("../")) 
-                return currentFolder;
-        
-        else if (folderName.equalsIgnoreCase("../")) 
-            // Se retorna un nuevo objeto file ya que la informacion del objeto
-            // currentFolder puede estar desactualizada
-            return new File(currentFolder.getParent());
-        
-        else
-            return Arrays.stream(getFiles(currentFolder.getAbsolutePath()))
-                        .filter((f) -> f.getName().equalsIgnoreCase(folderName) && f.isDirectory())
-                        .findFirst().orElse(currentFolder);
-    }
-    
-    public File goToFolder(String path){
-        if (path.equalsIgnoreCase(rootDirectory.getParent())) 
-            return rootDirectory;
-        else
-            return new File(path);
-    }
     
     public File getFile(String path){
         File f = new File(path);
@@ -479,6 +475,13 @@ public class Cloud implements Serializable{
     }
 
     
+    /**
+     * Regresa a la carpeta anterior a la actual(si la carpeta actual es la raiz
+     * no se puede retroceder)
+     * @param currentFolder Carpeta actual de trabajo
+     * @return Objeto File con los datos de la carpeta padre de la actual
+     * @throws IOException en caso de problemas de acceso a la carpeta
+     */
     public File goBack(String currentFolder) throws IOException{
         if (currentFolder.equalsIgnoreCase(rootDirectory.getCanonicalPath()))
             return rootDirectory;
@@ -486,40 +489,66 @@ public class Cloud implements Serializable{
             return goToFolder(currentFolder).getParentFile();
     }
     
-    public boolean isNewFilePermitted(long fileLenght){
-        return fileLenght <= getAvailableSpace();
+    /**
+     * Regresa a la carpeta anterior a la actual(si la carpeta actual es la raiz
+     * no se puede retroceder)
+     * @param currentFolder Carpeta actual de trabajo
+     * @return Objeto File con los datos de la carpeta padre de la actual
+     * @throws IOException en caso de problemas de acceso a la carpeta
+     */
+    
+    public File back(String currentFolder) throws IOException{
+        return goBack(currentFolder);
+    }
+
+    public File goToFolder(File currentFolder, String folderName){
+        final File[] files = currentFolder.listFiles();
+        return Arrays.stream(files)
+                .filter(f -> f.isDirectory() && f.getName().equalsIgnoreCase(folderName))
+                .findFirst().get();
+    }
+    
+    public File goToFolder(String path){
+        if (path.equalsIgnoreCase(rootDirectory.getParent())) 
+            return rootDirectory;
+        else
+            return new File(path);
     }
     
     public File getRootDirectory() {
         return rootDirectory;
     }
 
-    public double getUsedSpace() {
-        return usedSpace;
+    public String getRootDirectoryAsString(){
+        return "/";
+    }
+    
+    public long getUsedSpace() {
+        return info.getUsedSpace();
     }
     
     public void addFile(long fileLenght){
-        usedSpace+=fileLenght;
-    }
-
-    public double getAvailableSpace(){
-        return totalSpace-usedSpace;
+        info.addUsedSpace(fileLenght);
     }
     
-    public double getTotalSpace() {
-        return totalSpace;
+    public void removeFile(long fileLenght){
+        info.removeUsedSpace(fileLenght);
+    }
+
+    public long getAvailableSpace(){
+        return getTotalSpace()-getUsedSpace();
+    }
+    
+    public long getTotalSpace() {
+        return info.getTotalSpace();
     }
 
     public void setTotalSpace(long totalSpace) {
-        this.totalSpace = totalSpace;
+        info.setTotalSpace(totalSpace);
     }
 
     public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public static Calendar getC() {
-        return c;
+        return info.getCreationDate();
     }
     
 }
