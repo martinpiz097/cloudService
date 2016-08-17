@@ -1,0 +1,117 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.martin.cloudServer.db;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.martin.cloudCommon.model.DefaultUser;
+import org.martin.cloudCommon.model.User;
+import org.martin.cloudCommon.system.SysInfo;
+/**
+ *
+ * @author martin
+ */
+public final class DbManager {
+    
+    private final File fileUsers;
+    private LinkedList<User> users;
+    private int usersCount;
+    private transient ObjectOutputStream writer;
+    private transient ObjectInputStream reader;
+
+    public DbManager() throws IOException {
+        fileUsers = new File(SysInfo.ROOT_FOLDER_NAME + "/" + SysInfo.DB_USERS_FILE_NAME);
+        users = new LinkedList<>();
+        if(!fileUsers.exists()) fileUsers.createNewFile();
+        loadScript();
+    }
+
+    public File getFileUsers() {
+        return fileUsers;
+    }
+    
+    public boolean isValidRegistration(DefaultUser newUser){
+        return !users.stream().anyMatch((u) -> u.getNick().equalsIgnoreCase(newUser.getNick()));
+    }
+
+    public boolean isValidUser(String nick, String passw){
+        return users.stream().anyMatch((u) -> u.getNick()
+                .equalsIgnoreCase(nick) && u.getPassword().equalsIgnoreCase(passw));
+    }
+    
+    public void addUser(User user){
+        users.add(user);
+        updateScript();
+        usersCount++;
+    }
+    
+    public void addUser(DefaultUser user) throws IOException{
+        users.add(new User(usersCount+1, user.getNick(), user.getPassword()));
+        updateScript();
+        usersCount++;
+    }
+
+    public int getUsersCount(){
+        return usersCount;
+    }
+    
+    public User getUser(String nick){
+        return users.stream()
+                .filter(u -> u.getNick().equalsIgnoreCase(nick)).findFirst().orElse(null);
+    }
+        
+    public LinkedList<User> getUsers(){
+        return users;
+    }
+    
+    public void removeUser(int id){
+        users.removeIf(u -> u.getId() == id);
+        updateScript();
+        usersCount--;
+    }
+    
+    public void removeUser(String nick){
+        users.removeIf((u) -> u.getNick().equalsIgnoreCase(nick));
+        updateScript();
+        usersCount--;
+    }
+    
+    public void updateScript(){
+        try {
+            writer = new ObjectOutputStream(new FileOutputStream(fileUsers));
+            writer.writeObject(users);
+            writer.flush();
+            writer.close();
+        } catch (IOException ex) {
+            Logger.getLogger(DbManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void loadScript() throws IOException{
+        try {
+            reader = new ObjectInputStream(new FileInputStream(fileUsers));
+            try {
+                users = (LinkedList<User>) reader.readObject();
+                usersCount = users.size();
+            } catch (ClassNotFoundException ex) {
+                System.out.println("Error: " + ex.getMessage());
+            }
+            reader.close();
+        } catch (IOException ex) {
+            writer = new ObjectOutputStream(new FileOutputStream(fileUsers));
+            writer.writeObject(users);
+            writer.close();
+        }
+    }
+    
+}
