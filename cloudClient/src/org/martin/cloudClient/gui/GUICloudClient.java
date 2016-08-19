@@ -20,6 +20,9 @@ public class GUICloudClient extends javax.swing.JFrame {
         setResizable(false);
         spaceBar.setString(spaceBar.getValue() + "MB");
         spaceBar.setStringPainted(true);
+        // Investigar SwingWorker --> permite la ejecucion de procesos que requieren
+        // tiempo mediante un proceso en segundo plano para que la gui no se cuelgue
+        
     }
 
     /**
@@ -39,6 +42,7 @@ public class GUICloudClient extends javax.swing.JFrame {
         spaceBar = new javax.swing.JProgressBar();
         panelContent = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
+        panelDirectories = new javax.swing.JPanel();
         listFIles = new javax.swing.JScrollPane();
         listDirectories = new javax.swing.JList<>();
         panelIcons = new javax.swing.JPanel();
@@ -116,20 +120,25 @@ public class GUICloudClient extends javax.swing.JFrame {
                 .addContainerGap(42, Short.MAX_VALUE))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Archivos"));
+        jPanel3.setBackground(new java.awt.Color(204, 255, 204));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(102, 255, 102), null), "Archivos"));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 632, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 346, Short.MAX_VALUE)
         );
 
-        listDirectories.setBorder(javax.swing.BorderFactory.createTitledBorder("Directorios"));
+        panelDirectories.setBackground(java.awt.Color.white);
+        panelDirectories.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(51, 255, 51), null), "Directorios"));
+        panelDirectories.setLayout(new java.awt.BorderLayout());
+
+        listDirectories.setBackground(new java.awt.Color(153, 255, 153));
         listDirectories.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
@@ -137,13 +146,15 @@ public class GUICloudClient extends javax.swing.JFrame {
         });
         listFIles.setViewportView(listDirectories);
 
+        panelDirectories.add(listFIles, java.awt.BorderLayout.CENTER);
+
         javax.swing.GroupLayout panelContentLayout = new javax.swing.GroupLayout(panelContent);
         panelContent.setLayout(panelContentLayout);
         panelContentLayout.setHorizontalGroup(
             panelContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelContentLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(listFIles, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelDirectories, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -153,7 +164,7 @@ public class GUICloudClient extends javax.swing.JFrame {
             .addGroup(panelContentLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(listFIles, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                    .addComponent(panelDirectories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -538,6 +549,7 @@ public class GUICloudClient extends javax.swing.JFrame {
     private javax.swing.JList<String> listDirectories;
     private javax.swing.JScrollPane listFIles;
     private javax.swing.JPanel panelContent;
+    private javax.swing.JPanel panelDirectories;
     private javax.swing.JPanel panelIcons;
     private javax.swing.JPanel panelInfo;
     private javax.swing.JProgressBar spaceBar;

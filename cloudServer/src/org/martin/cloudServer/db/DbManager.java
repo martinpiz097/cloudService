@@ -25,7 +25,6 @@ public final class DbManager {
     
     private final File fileUsers;
     private LinkedList<User> users;
-    private int usersCount;
     private transient ObjectOutputStream writer;
     private transient ObjectInputStream reader;
 
@@ -34,6 +33,10 @@ public final class DbManager {
         users = new LinkedList<>();
         if(!fileUsers.exists()) fileUsers.createNewFile();
         loadScript();
+        // Los fileChannel de java io pueden trabajar con archivos más rapido
+        // ya que el so puede optimizarlos
+//        FileChannel fcInput = new FileInputStream(fileUsers).getChannel();
+//        FileChannel fcOutput = new FileOutputStream(fileUsers).getChannel();
     }
 
     public File getFileUsers() {
@@ -52,17 +55,20 @@ public final class DbManager {
     public void addUser(User user){
         users.add(user);
         updateScript();
-        usersCount++;
     }
     
     public void addUser(DefaultUser user) throws IOException{
-        users.add(new User(usersCount+1, user.getNick(), user.getPassword()));
+        users.add(new User(users.size()+1, user.getNick(), user.getPassword()));
         updateScript();
-        usersCount++;
     }
 
     public int getUsersCount(){
-        return usersCount;
+        return users.size();
+    }
+
+    public User getUser(int id){
+        return users.stream()
+                .filter(u -> u.getId() == id).findFirst().orElse(null);
     }
     
     public User getUser(String nick){
@@ -77,13 +83,11 @@ public final class DbManager {
     public void removeUser(int id){
         users.removeIf(u -> u.getId() == id);
         updateScript();
-        usersCount--;
     }
     
     public void removeUser(String nick){
         users.removeIf((u) -> u.getNick().equalsIgnoreCase(nick));
         updateScript();
-        usersCount--;
     }
     
     public void updateScript(){
@@ -102,7 +106,6 @@ public final class DbManager {
             reader = new ObjectInputStream(new FileInputStream(fileUsers));
             try {
                 users = (LinkedList<User>) reader.readObject();
-                usersCount = users.size();
             } catch (ClassNotFoundException ex) {
                 System.out.println("Error: " + ex.getMessage());
             }

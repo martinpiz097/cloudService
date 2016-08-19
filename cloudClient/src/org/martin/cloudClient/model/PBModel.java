@@ -6,7 +6,6 @@
 package org.martin.cloudClient.model;
 
 import javax.swing.BoundedRangeModel;
-import javax.swing.JProgressBar;
 import javax.swing.event.ChangeListener;
 import org.martin.cloudCommon.system.CloudInfo;
 
@@ -66,11 +65,11 @@ public class PBModel implements BoundedRangeModel{
 
     @Override
     public int getExtent() {
+        return getMaximum()-getMinimum()+1;
     }
 
     @Override
     public void setExtent(int newExtent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
