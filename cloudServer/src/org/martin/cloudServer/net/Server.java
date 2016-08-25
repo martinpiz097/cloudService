@@ -51,9 +51,17 @@ public class Server extends Thread{
     public synchronized boolean isValidRegistration(DefaultUser user){
         return dbManager.isValidRegistration(user);
     }
+
+    public synchronized boolean isValidRegistration(String nick, String passw){
+        return dbManager.isValidRegistration(nick, passw);
+    }
     
     public synchronized boolean isValidUser(DefaultUser user){
         return dbManager.isValidUser(user.getNick(), user.getPassword());
+    }
+    
+    public synchronized boolean isValidUser(String user, String passw){
+        return dbManager.isValidUser(user, passw);
     }
     
     public synchronized void addClient(Client client){
@@ -64,7 +72,13 @@ public class Server extends Thread{
     public synchronized void addUser(DefaultUser user) throws IOException{
         dbManager.addUser(user);
     }
-    
+
+    public synchronized boolean addUser(String nick, String passw){
+        final boolean isValid = isValidRegistration(nick, passw);
+        if (isValid) dbManager.addUser(nick, passw);
+        return isValid;
+    }
+
     public synchronized void removeUser(int id){
         dbManager.removeUser(id);
     }
@@ -79,6 +93,11 @@ public class Server extends Thread{
     
     public synchronized User getUser(String nick){
         return dbManager.getUser(nick);
+    }
+    
+    public synchronized User getUser(String nick, String password){
+        User u = dbManager.getUser(nick, password);
+        return u == null ? new User() : u;
     }
     
     public synchronized void removeClient(int id){

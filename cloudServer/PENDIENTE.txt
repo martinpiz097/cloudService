@@ -1,3 +1,5 @@
 Todo lo que tiene que ver con carpetas en el servidor queda pendiente para después, 
 ver como gestionar el tema ya que una carpeta puede tener tanto carpetas como archivos dentro
 
+- REVISAR EL TEMA DEL HILO TOPERATORREQUEST YA QUE SE PEGA EN EL GETRECEIVEDOBJECT
+

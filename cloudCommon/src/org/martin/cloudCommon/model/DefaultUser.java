@@ -19,9 +19,16 @@ public class DefaultUser implements Serializable{
     
     public DefaultUser(String nick, String password) {
         this.nick = nick;
-        this.password = Encryptor.getEncryptedText(password);
+        if (password == null) 
+            this.password = null;
+        else
+            this.password = Encryptor.getEncryptedText(password);
     }
 
+    public boolean isNull(){
+        return nick == null && password == null;
+    }
+    
     public String getNick() {
         return nick;
     }

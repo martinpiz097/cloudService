@@ -464,9 +464,24 @@ public class Cloud implements Serializable{
     
     // ../ Comando para regresar a carpeta anterior
     
+    /**
+     * Obtiene un archivo de acuerdo a la ruta espeficada
+     * @param path Ruta del archivo a acceder
+     * @return Objeto File solicitado
+     */
+    
     public File getFile(String path){
         File f = new File(path);
         return f.exists() ? f : null;
+    }
+
+    /**
+     * Obtiene un archivo de acuerdo a la ruta espeficada
+     * @param path Ruta del archivo a acceder
+     * @return Objeto File solicitado
+     */
+    public File access(String path){
+        return getFile(path);
     }
     
     public File getFile(String parent, String name){

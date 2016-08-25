@@ -1,0 +1,2 @@
+Para las peticiones y respuestas considerar el envio de enum (ya creadas algunas)
+en desmedro de instancias de variables boolean.

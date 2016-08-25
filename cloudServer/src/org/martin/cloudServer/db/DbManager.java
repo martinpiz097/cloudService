@@ -47,6 +47,11 @@ public final class DbManager {
         return !users.stream().anyMatch((u) -> u.getNick().equalsIgnoreCase(newUser.getNick()));
     }
 
+    public boolean isValidRegistration(String nick, String passw){
+        return !users.stream()
+                .anyMatch(u -> u.getNick().equals(nick) && u.getPassword().equals(passw));
+    }
+    
     public boolean isValidUser(String nick, String passw){
         return users.stream().anyMatch((u) -> u.getNick()
                 .equalsIgnoreCase(nick) && u.getPassword().equalsIgnoreCase(passw));
@@ -54,6 +59,11 @@ public final class DbManager {
     
     public void addUser(User user){
         users.add(user);
+        updateScript();
+    }
+    
+    public void addUser(String nick, String passw){
+        users.add(new User(users.size(), nick, passw));
         updateScript();
     }
     
@@ -75,7 +85,12 @@ public final class DbManager {
         return users.stream()
                 .filter(u -> u.getNick().equalsIgnoreCase(nick)).findFirst().orElse(null);
     }
-        
+    
+    public User getUser(String nick, String password){
+        return users.stream()
+                .filter(u -> u.getNick().equalsIgnoreCase(nick) && u.getPassword()
+                        .equalsIgnoreCase(password)).findFirst().orElse(null);
+    }        
     public LinkedList<User> getUsers(){
         return users;
     }

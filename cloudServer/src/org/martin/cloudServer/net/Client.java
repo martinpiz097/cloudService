@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.system.Cloud;
+import org.martin.cloudServer.net.threads.TOperatorRequest;
 
 /**
  *

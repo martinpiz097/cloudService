@@ -16,11 +16,21 @@ public class User extends DefaultUser implements Serializable{
     
     private final int id;
     private final Cloud cloud;
-    
+
+    public User() {
+        super(null, null);
+        id = 0;
+        cloud = null;
+    }
+
     public User(int id, String nick, String password) {
         super(nick, password);
         this.id = id;
         this.cloud = new Cloud(this);
+    }
+    
+    public boolean isNull(){
+        return id == 0 && cloud == null && super.isNull();
     }
 
     public int getId() {

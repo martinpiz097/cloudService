@@ -16,9 +16,11 @@ import org.martin.cloudCommon.interfaces.Transmissible;
 import org.martin.cloudCommon.model.DefaultUser;
 import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.model.packages.UserPackage;
+import org.martin.cloudCommon.system.Command;
 import org.martin.cloudServer.db.DbManager;
 import org.martin.cloudServer.net.Client;
 import org.martin.cloudServer.net.Server;
+import org.martin.cloudServer.system.CommandInterpreter;
 
 /**
  *
@@ -29,11 +31,26 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
     private final Socket sockRequest;
     private final ObjectInputStream input;
     private final ObjectOutputStream output;
-
+    private final CommandInterpreter ci;
+    
     public TOperatorRequest(Socket sockRequest) throws IOException {
         this.sockRequest = sockRequest;
         this.output = new ObjectOutputStream(this.sockRequest.getOutputStream());
         this.input = new ObjectInputStream(this.sockRequest.getInputStream());
+        System.out.println("Operator request instanciado!");
+        ci = new CommandInterpreter();
+    }
+
+    public Socket getSockRequest() {
+        return sockRequest;
+    }
+
+    public ObjectInputStream getInput() {
+        return input;
+    }
+
+    public ObjectOutputStream getOutput() {
+        return output;
     }
 
     public void closeConnection() throws IOException {
@@ -50,40 +67,26 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
 
     @Override
     public Object getReceivedObject() throws IOException, ClassNotFoundException {
-        return input.readObject();
+        Object objReceived = null;
+        System.out.println("Antes del while");
+        while (objReceived == null)
+            objReceived = input.readObject();
+        
+        System.out.println("Despues del while");
+        return objReceived;
     }
 
     @Override
     public void run() {
         Object objReceived = null;
-        UserPackage upReceived;
-        boolean isValidRequest;
-        User user;
 
         try {
-            do objReceived = getReceivedObject();
-            while (objReceived == null);
-
-            if (objReceived instanceof UserPackage) {
-                upReceived = (UserPackage) objReceived;
-                if (upReceived.isLogin()) {
-                    isValidRequest = Server.getInstance().isValidUser(upReceived.getUser());
-                    if (isValidRequest) {
-                        user = Server.getInstance().getUser(upReceived.getNick());
-                        Server.getInstance().addClient(new Client(user, sockRequest, output, input));
-                    }
-                    sendObject(isValidRequest);
-                }
-                else {
-                    isValidRequest = Server
-                            .getInstance().isValidRegistration(upReceived.getUser());
-                    if (isValidRequest)
-                        Server.getInstance().addUser(upReceived.getUser());
-                    
-                    sendObject(isValidRequest);
-                }
+            System.out.println("Antes del if");
+            if (getReceivedObject() instanceof Command){
+                ci.execCommand((Command)getReceivedObject(), this);
+                System.out.println("Respuesta enviada");
             }
-            closeConnection();
+            System.out.println("Al final del tor");
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex);
         }

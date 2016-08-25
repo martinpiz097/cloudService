@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.martin.cloudCommon.system;
+package org.martin.cloudCommon.systemMessages;
 
 /**
  *
  * @author martin
  */
-public class CommandInterpreter {
-
-    
+public enum ServerResponses {
+    VALID_REGISTRATION, INVALID_REGISTRATION, VALID_LOGIN, INVALID_LOGIN;
 }

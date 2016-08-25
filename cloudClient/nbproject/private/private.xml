@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="red">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/net/DefaultConnector.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/gui/GUICloudClient.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/model/PBModel.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/net/Connector.java</file>
         </group>
     </open-files>
 </project-private>
