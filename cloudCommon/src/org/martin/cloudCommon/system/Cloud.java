@@ -103,7 +103,7 @@ public class Cloud implements Serializable{
      */
 
     public void uploadFile(String parentFolder, Archive archive) throws IOException{
-        File file = new File(parentFolder, archive.getName());
+        File file = new File(parentFolder);
         file.createNewFile();
         writer = new FileOutputStream(file);
         archive.getQueueBytes().stream().forEach((b) -> {
@@ -276,6 +276,32 @@ public class Cloud implements Serializable{
     public void delF(String path){
         deleteFile(path);
     }
+
+    /**
+     * Elimina una carpeta y indicando su ubicación, si la carpeta no existe pasa nada.
+     * Si la carpeta no está vacía se borra todo su contenido
+     * @param path Ubicación de la carpeta a eliminar
+     * @throws java.io.IOException En caso de existir problemas al borrar
+     */
+    public void deleteFolder(String path) throws IOException{
+        final File folder = new File(path);
+        if (folder.exists()) {
+            for (File file : folder.listFiles())
+                if (file.isDirectory()) deleteFolder(file.getCanonicalPath());
+                else file.delete();
+            folder.delete();
+        }
+    }
+
+    /**
+     * Elimina una carpeta y indicando su ubicación, si la carpeta no existe pasa nada.
+     * Si la carpeta no está vacía se borra todo su contenido
+     * @param path Ubicación de la carpeta a eliminar
+     * @throws java.io.IOException En caso de existir problemas al borrar
+     */
+    public void delD(String path) throws IOException{
+        deleteFolder(path);
+    }
         
     /**
      * Devuelve un objeto File con los datos de la carpeta raiz de la nube
@@ -343,13 +369,9 @@ public class Cloud implements Serializable{
      */
     public void uploadFolder(Folder folder) throws IOException{
         File localFld;
-        
-        if (folder.hasFolders()) {
-            for (Folder fld : folder.getFolders()){
+        if (folder.hasFolders())
+            for (Folder fld : folder.getFolders())
                 localFld = new File(fld.getCanonicalPath());
-            }
-            
-        }
     }
     
     /**
@@ -363,6 +385,13 @@ public class Cloud implements Serializable{
     
     // Este metodo tambien sirve para obtener una carpeta con todo su contenido,
     // no necesariamente se descargará
+    /**
+     * Baja una carpeta con todo su contenido desde la nube (Método recursivo)
+     * @param localPath Ruta del equipo cliente en donde se almacenará la carpeta
+     * @param remotePath Ruta del servidor en donde se aloja la carpeta solicitada
+     * @return Objeto Folder con la información solicitada
+     * @throws IOException en caso de existir problemas al descargar la carpeta
+     */
     public Folder downloadFolder(String localPath, String remotePath) throws IOException{
         final File toDownload = new File(remotePath);
         Folder result = new Folder(localPath);
@@ -389,6 +418,17 @@ public class Cloud implements Serializable{
         
     }
     
+    /**
+     * Baja una carpeta con todo su contenido desde la nube (Método recursivo)
+     * @param localPath Ruta del equipo cliente en donde se almacenará la carpeta
+     * @param remotePath Ruta del servidor en donde se aloja la carpeta solicitada
+     * @return Objeto Folder con la información solicitada
+     * @throws IOException en caso de existir problemas al descargar la carpeta
+     */
+    public Folder dwnD(String localPath, String remotePath) throws IOException{
+        return downloadFolder(localPath, remotePath);
+    }
+    
     // El path tanto para el copyFolder y cutFolder representa la ruta COMPLETA
     // de la carpeta, no solo su nombre
     
@@ -399,7 +439,6 @@ public class Cloud implements Serializable{
         if (toCopy.getParent().equalsIgnoreCase(newParent)){
             int cont = 0;
             String pt = path;
-            if(pt.endsWith("/")) pt = pt.substring(0, pt.length());
             String newName = pt;
             
             while (goToFolder(pt+cont).exists()) cont++;
@@ -431,6 +470,10 @@ public class Cloud implements Serializable{
         });
     }
     
+    public void cpD(String path, String newParent) throws IOException{
+        copyFolder(path, newParent);
+    }
+    
     public void cutFolder(String path, String newParent) throws IOException{
         File toCut = goToFolder(path);
         File newFld;
@@ -456,10 +499,6 @@ public class Cloud implements Serializable{
             }
         });
         toCut.delete();
-    }
-    
-    public void deleteFolder(String path){
-        goToFolder(path).delete();
     }
     
     // ../ Comando para regresar a carpeta anterior

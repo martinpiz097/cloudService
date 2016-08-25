@@ -29,6 +29,7 @@ public class User extends DefaultUser implements Serializable{
         this.cloud = new Cloud(this);
     }
     
+    @Override
     public boolean isNull(){
         return id == 0 && cloud == null && super.isNull();
     }
@@ -39,6 +40,11 @@ public class User extends DefaultUser implements Serializable{
 
     public Cloud getCloud() {
         return cloud;
+    }
+
+    @Override
+    public String toString() {
+        return id+".- "+super.getNick()+"-"+super.getPassword();
     }
     
 }

@@ -14,7 +14,7 @@ import org.martin.cloudCommon.system.Encryptor;
  */
 public class DefaultUser implements Serializable{
     
-    private String nick;
+    String nick;
     private int[] password;
     
     public DefaultUser(String nick, String password) {

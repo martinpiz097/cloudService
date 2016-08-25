@@ -6,17 +6,22 @@
 package org.martin.cloudClient.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import org.martin.cloudClient.model.LMDirectories;
+import org.martin.cloudClient.model.PBModel;
 import org.martin.cloudClient.net.Connector;
 import org.martin.cloudClient.net.DefaultConnector;
-import org.martin.cloudCommon.model.User;
-import org.martin.cloudCommon.model.packages.TransferPackage;
+import org.martin.cloudCommon.model.packages.ClientPackage;
+import org.martin.cloudCommon.model.packages.UserPackage;
 import org.martin.cloudCommon.system.Command;
 import org.martin.cloudCommon.system.SysInfo;
 
@@ -30,6 +35,17 @@ public class GUICloudClient extends javax.swing.JFrame {
     private Connector connector;
     private DefaultConnector df;
     private Socket socket;
+    private ClientPackage cliPackage;
+    private static GUICloudClient gui;
+    
+    public static void newInstance(){
+        gui = new GUICloudClient();
+        gui.setVisible(true);
+    }
+    
+    public static GUICloudClient getInstance(){
+        return gui;
+    }
     
     public GUICloudClient() {
         initComponents();
@@ -43,12 +59,28 @@ public class GUICloudClient extends javax.swing.JFrame {
         // tiempo mediante un proceso en segundo plano para que la gui no se cuelgue
         
     }
+
+    public ClientPackage getCliPackage() {
+        return cliPackage;
+    }
     
     private void openWindow(Window window, Component objectiveLocation){
         window.show();
         window.setLocationRelativeTo(objectiveLocation);
     }
+    
+    public void openWindow(Window window, Component objectiveLocation, int width, 
+            int height){
+        window.show();
+        window.setSize(width, height);
+        window.setLocationRelativeTo(null);
+    }
 
+    public void openWindow(Window window, Component objetiveLocation, Dimension dimension){
+        openWindow(window, objetiveLocation);
+        window.setSize(dimension);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -64,11 +96,14 @@ public class GUICloudClient extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         spaceBar = new javax.swing.JProgressBar();
+        lblUserName = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
         panelContent = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
         panelDirectories = new javax.swing.JPanel();
         listFIles = new javax.swing.JScrollPane();
         listDirectories = new javax.swing.JList<>();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        panelFiles = new javax.swing.JPanel();
         panelIcons = new javax.swing.JPanel();
         btnBack = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
@@ -109,6 +144,12 @@ public class GUICloudClient extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
 
+        formClientManagement.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formClientManagementWindowOpened(evt);
+            }
+        });
+
         panelInfo.setBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(102, 255, 153), null));
 
         jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
@@ -120,22 +161,32 @@ public class GUICloudClient extends javax.swing.JFrame {
         jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
         jLabel8.setText("Espacio Utilizado: ");
 
+        lblUserName.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
+        lblUserName.setText(" ");
+
+        jLabel17.setFont(new java.awt.Font("DejaVu Sans", 1, 12)); // NOI18N
+        jLabel17.setText(" ");
+
         javax.swing.GroupLayout panelInfoLayout = new javax.swing.GroupLayout(panelInfo);
         panelInfo.setLayout(panelInfoLayout);
         panelInfoLayout.setHorizontalGroup(
             panelInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelInfoLayout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(panelInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addGroup(panelInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panelInfoLayout.createSequentialGroup()
-                        .addComponent(jLabel7)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(panelInfoLayout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addGap(255, 255, 255)
+                        .addComponent(lblUserName, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(36, 36, 36)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spaceBar, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)))
+                        .addComponent(spaceBar, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
+                    .addGroup(panelInfoLayout.createSequentialGroup()
+                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         panelInfoLayout.setVerticalGroup(
@@ -146,27 +197,16 @@ public class GUICloudClient extends javax.swing.JFrame {
                         .addGap(10, 10, 10)
                         .addGroup(panelInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6)
-                            .addComponent(jLabel8)))
+                            .addComponent(jLabel8)
+                            .addComponent(lblUserName)))
                     .addGroup(panelInfoLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(spaceBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel7)
-                .addContainerGap(42, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBackground(new java.awt.Color(204, 255, 204));
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(102, 255, 102), null), "Archivos"));
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 632, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 346, Short.MAX_VALUE)
+                .addGroup(panelInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel17))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         panelDirectories.setBackground(java.awt.Color.white);
@@ -174,14 +214,15 @@ public class GUICloudClient extends javax.swing.JFrame {
         panelDirectories.setLayout(new java.awt.BorderLayout());
 
         listDirectories.setBackground(new java.awt.Color(153, 255, 153));
-        listDirectories.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        listDirectories.setModel(new DefaultListModel<File>());
         listFIles.setViewportView(listDirectories);
 
         panelDirectories.add(listFIles, java.awt.BorderLayout.CENTER);
+
+        panelFiles.setBackground(new java.awt.Color(204, 255, 204));
+        panelFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(new java.awt.Color(102, 255, 102), null), "Archivos"));
+        panelFiles.setLayout(new java.awt.GridLayout(0, 10));
+        jScrollPane1.setViewportView(panelFiles);
 
         javax.swing.GroupLayout panelContentLayout = new javax.swing.GroupLayout(panelContent);
         panelContent.setLayout(panelContentLayout);
@@ -191,7 +232,7 @@ public class GUICloudClient extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(panelDirectories, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addContainerGap())
         );
         panelContentLayout.setVerticalGroup(
@@ -199,8 +240,8 @@ public class GUICloudClient extends javax.swing.JFrame {
             .addGroup(panelContentLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelDirectories, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1)
+                    .addComponent(panelDirectories, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -372,7 +413,7 @@ public class GUICloudClient extends javax.swing.JFrame {
             .addGroup(formClientManagementLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(panelInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(32, 32, 32)
                 .addComponent(panelIcons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -642,7 +683,7 @@ public class GUICloudClient extends javax.swing.JFrame {
             txtRegNick.selectAll();
             txtRegNick.requestFocus();
         }
-        else if (pass1.equals(pass2)) {
+        else if (!pass1.equals(pass2)) {
             JOptionPane.showMessageDialog(formClientRegister, "Las contraseñas no coinciden");
             txtRegPass1.selectAll();
             txtRegPass1.requestFocus();
@@ -650,9 +691,9 @@ public class GUICloudClient extends javax.swing.JFrame {
         else{
             try {
                 // Esto se debe cambiar
-                socket = new Socket(SysInfo.DEFAULT_HOST, SysInfo.DEFAULT_PORT);
+                socket = new Socket(SysInfo.LOCALHOST, SysInfo.DEFAULT_PORT);
                 connector = new Connector(socket);
-                df.sendObject(Command.newRegU(user, pass1));
+                connector.sendCommand(Command.newRegU(user, pass1));
                 final Object objReceived = connector.getReceivedObject();
                 if (objReceived instanceof Boolean)
                     if ((Boolean)objReceived){
@@ -675,7 +716,7 @@ public class GUICloudClient extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_btnRegUserActionPerformed
-
+    
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         openWindow(formClientRegister, this);
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -691,14 +732,12 @@ public class GUICloudClient extends javax.swing.JFrame {
         }
         else{
             try {
-                final Command regU = Command.newRegU(nick, passw);
                 final Socket sock = new Socket(SysInfo.LOCALHOST, SysInfo.DEFAULT_PORT);
-                final User u;
+                final UserPackage up;
                 connector = new Connector(sock);
                 connector.sendCommand(Command.newLoginU(nick, passw));
-                
-                u = (User) connector.getReceivedObject();
-                if (u.isNull()) {
+                up = (UserPackage) connector.getReceivedObject();
+                if (!up.hasClientPackage()) {
                     JOptionPane.showMessageDialog(this, "Usuario y/o contraseña incorrectos");
                     txtNick.selectAll();
                     txtNick.requestFocus();
@@ -707,8 +746,11 @@ public class GUICloudClient extends javax.swing.JFrame {
                 else{
                     txtNick.setText(null);
                     txtPassword.setText(null);
-                    connector.setUser(u);
-                    JOptionPane.showMessageDialog(this, "¡Bienvenido "+u.getNick()+"!");
+                    cliPackage = up.getCliPackage();
+                    openWindow(formClientManagement, this, formClientManagement.getPreferredSize());
+                    formClientManagement.setResizable(false);
+                    JOptionPane.showMessageDialog(this, "¡Bienvenido "
+                            +cliPackage.getUserNick()+"!");
                 }
                 
             } catch (IOException | ClassNotFoundException ex) {
@@ -730,6 +772,30 @@ public class GUICloudClient extends javax.swing.JFrame {
             btnLogin.doClick();
     }//GEN-LAST:event_txtPasswordKeyReleased
 
+    private void formClientManagementWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formClientManagementWindowOpened
+        spaceBar.setModel(new PBModel(cliPackage.getInfo()));
+        lblUserName.setText(cliPackage.getUserNick());
+        updateList();
+        updatePanel();
+    }//GEN-LAST:event_formClientManagementWindowOpened
+
+    public void updateList(File directory){
+        listDirectories.setModel(new LMDirectories(directory));
+    }
+    
+    public void updateList(){
+        updateList(cliPackage.getCurrentDir());
+    }
+    
+    public void updatePanel(){
+        Grapher.graphFiles(cliPackage.getOnlyFiles(), panelFiles, connector);
+    }
+
+    public void updateAll(){
+        updateList();
+        updatePanel();
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -758,10 +824,8 @@ public class GUICloudClient extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new GUICloudClient().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            GUICloudClient.newInstance();
         });
     }
 
@@ -788,6 +852,7 @@ public class GUICloudClient extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -802,12 +867,14 @@ public class GUICloudClient extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JList<String> listDirectories;
+    private javax.swing.JLabel lblUserName;
+    private javax.swing.JList<File> listDirectories;
     private javax.swing.JScrollPane listFIles;
     private javax.swing.JPanel panelContent;
     private javax.swing.JPanel panelDirectories;
+    private javax.swing.JPanel panelFiles;
     private javax.swing.JPanel panelIcons;
     private javax.swing.JPanel panelInfo;
     private javax.swing.JProgressBar spaceBar;

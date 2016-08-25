@@ -19,29 +19,35 @@ public class PBModel implements BoundedRangeModel{
     //private final JProgressBar progressBar;
     private final CloudInfo info;
     private int currentValue;
+    private int minimun;
+    private int maximun;
     
     public PBModel(CloudInfo info) {
         this.info = info;
         this.currentValue = (int) (info.getUsedSpace()/1024/1024);
+        this.minimun = 0;
+        this.maximun = (int) (info.getTotalSpace()/1024/1024);
     }
     
     @Override
     public int getMinimum() {
-        return 0;
+        return minimun;
     }
 
     @Override
     public void setMinimum(int newMinimum) {
+        this.minimun = newMinimum;
     }
 
     @Override
     public int getMaximum() {
-        return (int) (info.getTotalSpace() / 1024 / 1024);
+        return maximun;
     }
 
     @Override
     public void setMaximum(int newMaximum) {
-        info.setTotalSpace(newMaximum);
+        info.setTotalSpace(newMaximum*1024*1024);
+        maximun = (int) (info.getTotalSpace()/1024/1024);
     }
 
     @Override
@@ -79,12 +85,10 @@ public class PBModel implements BoundedRangeModel{
 
     @Override
     public void addChangeListener(ChangeListener x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void removeChangeListener(ChangeListener x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

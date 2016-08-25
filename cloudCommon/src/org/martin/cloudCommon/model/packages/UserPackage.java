@@ -6,35 +6,25 @@
 package org.martin.cloudCommon.model.packages;
 
 import java.io.Serializable;
-import org.martin.cloudCommon.model.DefaultUser;
 
 /**
  *
  * @author martin
  */
 public class UserPackage implements Serializable{
-    private final DefaultUser user;
-    private final boolean isLogin; 
 
-    public UserPackage(DefaultUser user, boolean isLogin) {
-        this.user = user;
-        this.isLogin = isLogin;
+    private final ClientPackage cliPackage;
+
+    public UserPackage(ClientPackage cliPackage) {
+        this.cliPackage = cliPackage;
+    }
+    
+    public boolean hasClientPackage(){
+        return cliPackage != null;
     }
 
-    public DefaultUser getUser(){
-        return user;
-    }
-    
-    public String getNick(){
-        return user.getNick();
-    }
-    
-    public String getPassword(){
-        return user.getPassword();
-    }
-    
-    public boolean isLogin() {
-        return isLogin;
+    public ClientPackage getCliPackage() {
+        return cliPackage;
     }
     
 }

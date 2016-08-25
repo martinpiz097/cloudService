@@ -127,6 +127,22 @@ public class Command implements Serializable{
         for (int i = 1; i < split.length; i++)
             options[i-1] = split[i];
     }
+
+    public Command(String... strCommand){
+        final int len = strCommand.length;
+        order = strCommand[0];
+        if (len == 1) options = null;
+        
+        else{
+            options = new String[len-1];
+            for (int i = 1; i < len; i++)
+                strCommand[i] = options[i-1];
+        }
+    }
+
+    public boolean hasOptions(){
+        return options != null;
+    }
     
     public boolean isValid(){
         if(order == null) return false;

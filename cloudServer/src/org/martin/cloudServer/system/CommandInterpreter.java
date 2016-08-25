@@ -6,7 +6,9 @@
 package org.martin.cloudServer.system;
 
 import java.io.IOException;
+import org.martin.cloudCommon.model.DefaultUser;
 import org.martin.cloudCommon.model.User;
+import org.martin.cloudCommon.model.packages.ClientPackage;
 import org.martin.cloudCommon.model.packages.TransferPackage;
 import org.martin.cloudCommon.model.packages.UserPackage;
 import org.martin.cloudCommon.system.Cloud;
@@ -35,14 +37,17 @@ public class CommandInterpreter {
         final String secondOption = cmd.getOption(1);
         
         if (cmd.isEqualsOrder(Command.loginU)){
-            final User user = Server.getInstance().getUser(firstOption, secondOption);
-            // Si recibe un usuario que no es null significa que esta correcto el login
-            tor.sendObject(user);
-            if (user.isNull()) tor.closeConnection();
-            
-            else Server.getInstance()
-                    .addClient(new Client(user, tor.getSockRequest()));
-            
+            final User u = Server.getInstance().getUser(firstOption, secondOption);
+            if (u.isNull()) {
+                tor.sendObject(new UserPackage(null));
+                tor.closeConnection();
+            }
+            else{
+                tor.sendObject(new UserPackage(new ClientPackage(u, 
+                        u.getCloud().getInfo(), u.getCloud().root())));
+                Server.getInstance().addClient(new Client(u, tor.getSockRequest()));
+                tor.closeStreams();
+            }
         }
         else if (cmd.isEqualsOrder(Command.regU))
             tor.sendObject(Server.getInstance().addUser(firstOption, secondOption));
@@ -72,8 +77,8 @@ public class CommandInterpreter {
         else if (cmd.isEqualsOrder(Command.ctF))
             clientCloud.ctF(firstOption, secondOption);
         
-//        else if (cmd.isEqualsOrder(Command.delD))
-//            clientCloud.delD(firstOption);
+        else if (cmd.isEqualsOrder(Command.delD))
+            clientCloud.delD(firstOption);
         
         else if (cmd.isEqualsOrder(Command.delF))
             clientCloud.delF(firstOption);

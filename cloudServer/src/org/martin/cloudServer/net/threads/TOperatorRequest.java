@@ -13,13 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.martin.cloudCommon.interfaces.Receivable;
 import org.martin.cloudCommon.interfaces.Transmissible;
-import org.martin.cloudCommon.model.DefaultUser;
-import org.martin.cloudCommon.model.User;
-import org.martin.cloudCommon.model.packages.UserPackage;
 import org.martin.cloudCommon.system.Command;
-import org.martin.cloudServer.db.DbManager;
-import org.martin.cloudServer.net.Client;
-import org.martin.cloudServer.net.Server;
 import org.martin.cloudServer.system.CommandInterpreter;
 
 /**
@@ -59,6 +53,11 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
         sockRequest.close();
     }
 
+    public void closeStreams() throws IOException{
+        output.close();
+        input.close();
+    }
+    
     @Override
     public void sendObject(Object obj) throws IOException {
         output.writeObject(obj);
@@ -66,14 +65,9 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
     }
 
     @Override
+    @SuppressWarnings("empty-statement")
     public Object getReceivedObject() throws IOException, ClassNotFoundException {
-        Object objReceived = null;
-        System.out.println("Antes del while");
-        while (objReceived == null)
-            objReceived = input.readObject();
-        
-        System.out.println("Despues del while");
-        return objReceived;
+        return input.readObject();
     }
 
     @Override
@@ -81,9 +75,12 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
         Object objReceived = null;
 
         try {
+            while (objReceived == null)       
+                objReceived = getReceivedObject();
+            
             System.out.println("Antes del if");
-            if (getReceivedObject() instanceof Command){
-                ci.execCommand((Command)getReceivedObject(), this);
+            if (objReceived instanceof Command){
+                ci.execCommand((Command)objReceived, this);
                 System.out.println("Respuesta enviada");
             }
             System.out.println("Al final del tor");

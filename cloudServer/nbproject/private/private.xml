@@ -7,7 +7,10 @@
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/src/org/martin/cloudServer/system/CommandInterpreter.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/NOTAS</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/src/org/martin/cloudServer/net/threads/TClient.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/src/org/martin/cloudServer/db/DbManager.java</file>
             <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/PENDIENTE.txt</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/src/org/martin/cloudServer/net/threads/TOperatorRequest.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudServer/src/org/martin/cloudServer/net/Client.java</file>
         </group>
     </open-files>
 </project-private>

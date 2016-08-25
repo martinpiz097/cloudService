@@ -11,7 +11,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import org.martin.cloudCommon.interfaces.Receivable;
 import org.martin.cloudCommon.interfaces.Transmissible;
-import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.model.packages.TransferPackage;
 import org.martin.cloudCommon.system.Command;
 
@@ -20,7 +19,6 @@ import org.martin.cloudCommon.system.Command;
  * @author martin
  */
 public class Connector implements Transmissible, Receivable{
-    private User user;
     private final Socket socket;
     private final ObjectOutputStream output;
     private final ObjectInputStream input;
@@ -30,22 +28,7 @@ public class Connector implements Transmissible, Receivable{
         output = new ObjectOutputStream(this.socket.getOutputStream());
         input = new ObjectInputStream(this.socket.getInputStream());
     }
-
-    public Connector(User user, Socket socket) throws IOException {
-        this.user = user;
-        this.socket = socket;
-        output = new ObjectOutputStream(this.socket.getOutputStream());
-        input = new ObjectInputStream(this.socket.getInputStream());
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
+    
     public Socket getSocket() {
         return socket;
     }
@@ -82,10 +65,10 @@ public class Connector implements Transmissible, Receivable{
      */
     
     @Override
+    @SuppressWarnings("empty-statement")
     public Object getReceivedObject() throws IOException, ClassNotFoundException {
         Object objReceived;
-        do objReceived = input.readObject();
-        while(objReceived == null);
+        while((objReceived = input.readObject()) == null);
         return objReceived;
     }
     

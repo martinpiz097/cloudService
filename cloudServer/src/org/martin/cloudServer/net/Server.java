@@ -52,8 +52,8 @@ public class Server extends Thread{
         return dbManager.isValidRegistration(user);
     }
 
-    public synchronized boolean isValidRegistration(String nick, String passw){
-        return dbManager.isValidRegistration(nick, passw);
+    public synchronized boolean isValidRegistration(String nick){
+        return dbManager.isValidRegistration(nick);
     }
     
     public synchronized boolean isValidUser(DefaultUser user){
@@ -74,7 +74,7 @@ public class Server extends Thread{
     }
 
     public synchronized boolean addUser(String nick, String passw){
-        final boolean isValid = isValidRegistration(nick, passw);
+        final boolean isValid = isValidRegistration(nick);
         if (isValid) dbManager.addUser(nick, passw);
         return isValid;
     }
@@ -119,7 +119,9 @@ public class Server extends Thread{
     public void run(){
         while (true) {
             try {
+                System.out.println("Antes del nuevo cliente");
                 new TOperatorRequest(serverSock.accept()).start();
+                System.out.println("Un cliente llegó!");
                 Thread.sleep(300);
             } catch (InterruptedException | IOException ex) {
                 Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);

@@ -33,6 +33,7 @@ public final class DbManager {
         users = new LinkedList<>();
         if(!fileUsers.exists()) fileUsers.createNewFile();
         loadScript();
+        printUsers();
         // Los fileChannel de java io pueden trabajar con archivos más rapido
         // ya que el so puede optimizarlos
 //        FileChannel fcInput = new FileInputStream(fileUsers).getChannel();
@@ -47,9 +48,9 @@ public final class DbManager {
         return !users.stream().anyMatch((u) -> u.getNick().equalsIgnoreCase(newUser.getNick()));
     }
 
-    public boolean isValidRegistration(String nick, String passw){
+    public boolean isValidRegistration(String nick){
         return !users.stream()
-                .anyMatch(u -> u.getNick().equals(nick) && u.getPassword().equals(passw));
+                .anyMatch(u -> u.getNick().equals(nick));
     }
     
     public boolean isValidUser(String nick, String passw){
@@ -63,7 +64,7 @@ public final class DbManager {
     }
     
     public void addUser(String nick, String passw){
-        users.add(new User(users.size(), nick, passw));
+        users.add(new User(users.size()+1, nick, passw));
         updateScript();
     }
     
@@ -95,6 +96,12 @@ public final class DbManager {
         return users;
     }
     
+    private void printUsers(){
+        System.out.println("Usuarios\n--------\n");
+        System.out.println("Cantidad de usuarios: " + users.size());
+        users.forEach(System.out::println);
+    }
+    
     public void removeUser(int id){
         users.removeIf(u -> u.getId() == id);
         updateScript();
@@ -102,6 +109,11 @@ public final class DbManager {
     
     public void removeUser(String nick){
         users.removeIf((u) -> u.getNick().equalsIgnoreCase(nick));
+        updateScript();
+    }
+    
+    public void removeAllUsers(){
+        users.clear();
         updateScript();
     }
     
@@ -116,19 +128,19 @@ public final class DbManager {
         }
     }
     
-    public void loadScript() throws IOException{
+    public void loadScript(){
         try {
             reader = new ObjectInputStream(new FileInputStream(fileUsers));
-            try {
-                users = (LinkedList<User>) reader.readObject();
-            } catch (ClassNotFoundException ex) {
-                System.out.println("Error: " + ex.getMessage());
-            }
-            reader.close();
+            final Object obj = reader.readObject();
+
+            if (obj == null) updateScript();
+            else if (obj instanceof LinkedList) users = (LinkedList<User>) obj;
+            else updateScript();
+            
         } catch (IOException ex) {
-            writer = new ObjectOutputStream(new FileOutputStream(fileUsers));
-            writer.writeObject(users);
-            writer.close();
+            Logger.getLogger(DbManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(DbManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

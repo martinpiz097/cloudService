@@ -15,10 +15,10 @@ public class Encryptor {
     private static final byte ADDER_NUMBER = 3;
     
     public static int[] getEncryptedText(String text){
-        int lenText = text.length();
+        final int lenText = text.length();
         int[] textCode = new int[lenText];
         for (int i = 0; i < lenText; i++) 
-            textCode[i] = (int)text.charAt(i)*MULTIPLIER_FACTOR+ADDER_NUMBER;
+            textCode[i] = ((int)text.charAt(i))*MULTIPLIER_FACTOR+ADDER_NUMBER;
         
         return textCode;
     }
@@ -27,7 +27,7 @@ public class Encryptor {
         final int lenArray = textCode.length;
         String text = "";
         for (int i = 0; i < lenArray; i++)
-            text+=((char)((textCode[i])-ADDER_NUMBER)/MULTIPLIER_FACTOR);
+            text+=(char)((textCode[i]-ADDER_NUMBER)/MULTIPLIER_FACTOR);
         
         return text;
     }
