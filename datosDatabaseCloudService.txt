@@ -1,0 +1,30 @@
+usuario:
+
+	id
+	nick
+	clave
+	cloud
+	
+cloud:
+
+	id
+	cloudInfo
+	rootDirectory
+
+cloudInfo
+
+	id
+	usedSpace
+	totalSpace(tipoCloud)
+	creationDate
+
+(
+
+tipoCloud:
+
+	id
+	nombre
+	price
+	totalSpace
+
+)

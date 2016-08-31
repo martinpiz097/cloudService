@@ -1,0 +1,25 @@
+addUser --> nick, pass
+
+usersCount LISTO
+
+getUser --> id LISTO
+
+getUser --> nick LISTO
+
+getUser --> nick, passw VER QUE TAN NECESARIO ES
+
+getUsers LISTO
+
+removeUser --> id LISTO
+
+removeUser --> nick LISTO
+
+removeAllUsers
+
+addCloud --> rootDirectory, cloudInfo
+
+getCloud --> id
+
+addCloudInfo --< long usedSpace, long totalSpace, Date creationDate
+
+getCloudInfo --> id

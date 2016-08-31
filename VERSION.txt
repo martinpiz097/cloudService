@@ -1,0 +1,8 @@
+0.8.4a
+
+	Server --> Ya hay registro de login de usuarios
+	       --> Algunos comandos se envian correctamente
+
+	Client --> Problemas con el login, ya que existen errores al mostrar la ventana
+
+
