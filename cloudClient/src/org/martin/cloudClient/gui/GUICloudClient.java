@@ -785,7 +785,7 @@ public class GUICloudClient extends javax.swing.JFrame {
     }//GEN-LAST:event_txtPasswordKeyReleased
 
     private void formClientManagementWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formClientManagementWindowOpened
-        spaceBar.setModel(new PBModel(cliPackage.getInfo()));
+        spaceBar.setModel(new PBModel(cliPackage.getAccount()));
         lblUserName.setText(cliPackage.getUserNick());
         updateList();
         updatePanel();

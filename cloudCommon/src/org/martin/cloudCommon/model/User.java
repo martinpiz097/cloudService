@@ -17,6 +17,10 @@ public class User implements Serializable{
     private final long id;
     private String nick;
     private int[] password;
+
+    public User(){
+        this(-1, null, null);
+    }
     
     public User(long id, String nick, String password){
         this.id = id;

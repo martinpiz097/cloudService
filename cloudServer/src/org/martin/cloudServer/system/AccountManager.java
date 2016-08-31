@@ -10,7 +10,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,24 +21,31 @@ import org.martin.cloudCommon.system.Account;
 import org.martin.cloudCommon.system.Archive;
 import org.martin.cloudCommon.system.Folder;
 import org.martin.cloudCommon.system.SysInfo;
+import org.martin.cloudServer.db.DbManager;
 
 /**
  *
  * @author martin
  */
+
+// Antiguo Cloud
 public class AccountManager implements Serializable{
     
+    // Cada accountManager tendra un objeto dbManager para darle
+    // la carga de concurrencia al motor de Base de Datos
+    private final transient DbManager dbManager;
+    private final Account account;
     private final File rootDirectory;
     private transient FileInputStream reader;
     private transient FileOutputStream writer;
     
-    public AccountManager(User ownerUser) {
-        rootDirectory = new File(SysInfo.ROOT_FOLDER_NAME + "/" + 
-                ownerUser.getId() + ownerUser.getNick() + "/");
-        if(!rootDirectory.exists()) rootDirectory.mkdir();
+    public AccountManager(User ownerUser, Account account) throws SQLException {
+        this(getRootDirectoryName(ownerUser), account);
     }
 
-    public AccountManager(String rootDirectoryPath, Account info) {
+    public AccountManager(String rootDirectoryPath, Account account) throws SQLException {
+        this.account = account;
+        dbManager = new DbManager();
         this.rootDirectory = new File(rootDirectoryPath);
         if (!rootDirectory.exists()) rootDirectory.mkdir();
     }
@@ -44,6 +53,10 @@ public class AccountManager implements Serializable{
     public static String getRootDirectoryName(User user){
         return SysInfo.ROOT_FOLDER_NAME + "/" + 
                 user.getId() + user.getNick() + "/";
+    }
+    
+    public DbManager getDbManager(){
+        return dbManager;
     }
     
     // El goBack se puede hacer desde el cliente guardando la ruta actual
@@ -70,10 +83,12 @@ public class AccountManager implements Serializable{
      * @param fileLenght tamaño del archivo que se desea insertar
      * @return true si el espacio disponible permite incluir más archivos; falso
      * en caso contrario
+     * @throws java.sql.SQLException En caso de existir problemas al hacer consultas
+     * a la base de datos
      */
     
-    public boolean isNewFilePermitted(long fileLenght){
-        return fileLenght <= getAvailableSpace();
+    public boolean hasAvailableSpace(long fileLenght) throws SQLException{
+        return dbManager.hasAvailableSpace(fileLenght, account.getId());
     }
 
     /**
@@ -84,7 +99,7 @@ public class AccountManager implements Serializable{
      * @throws IOException en caso de existir problemas al escribir o leer en un archivo
      */
     
-    public void uploadFile(Archive newArchive) throws IOException{
+    public void uploadFile(Archive newArchive) throws IOException, SQLException{
         uploadFile(newArchive.getParent(), newArchive);
     }
     
@@ -96,7 +111,7 @@ public class AccountManager implements Serializable{
      * @throws IOException en caso de existir problemas al escribir o leer en un archivo
      */
     
-    public void uplF(Archive archive) throws IOException{
+    public void uplF(Archive archive) throws IOException, SQLException{
         uploadFile(archive.getParent(), archive);
     }
     
@@ -109,7 +124,7 @@ public class AccountManager implements Serializable{
      * bytes
      */
 
-    public void uploadFile(String parentFolder, Archive archive) throws IOException{
+    public void uploadFile(String parentFolder, Archive archive) throws IOException, SQLException{
         File file = new File(parentFolder);
         file.createNewFile();
         writer = new FileOutputStream(file);
@@ -133,7 +148,7 @@ public class AccountManager implements Serializable{
      * bytes
      */
     
-    public void uplF(String parentFolder, Archive archive) throws IOException{
+    public void uplF(String parentFolder, Archive archive) throws IOException, SQLException{
         uploadFile(parentFolder, archive);
     }
     
@@ -179,7 +194,7 @@ public class AccountManager implements Serializable{
      * @throws IOException en caso de existir problemas al copiar
      */
     
-    public void copyFile(String currentPath, String newFolder) throws IOException{
+    public void copyFile(String currentPath, String newFolder) throws IOException, SQLException{
         File f = getFile(currentPath);
         if(f == null) return;
         reader = new FileInputStream(f);
@@ -223,7 +238,7 @@ public class AccountManager implements Serializable{
      * @throws IOException en caso de existir problemas al copiar
      */
     
-    public void cpF(String currentPath, String newFolder) throws IOException{
+    public void cpF(String currentPath, String newFolder) throws IOException, SQLException{
         copyFile(currentPath, newFolder);
     }
     
@@ -268,7 +283,7 @@ public class AccountManager implements Serializable{
      * Elimina un archivo indicando su ubicación, si el archivo no existe pasa nada
      * @param path Ubicación del archivo a eliminar
      */
-    public void deleteFile(String path){
+    public void deleteFile(String path) throws SQLException{
         final File toDelete = getFile(path);
         if (toDelete != null) {
             removeFile(toDelete.length());
@@ -280,7 +295,7 @@ public class AccountManager implements Serializable{
      * Elimina un archivo indicando su ubicación, si el archivo no existe pasa nada
      * @param path Ubicación del archivo a eliminar
      */
-    public void delF(String path){
+    public void delF(String path) throws SQLException{
         deleteFile(path);
     }
 
@@ -470,7 +485,7 @@ public class AccountManager implements Serializable{
             else{
                 try {
                     copyFile(f.getCanonicalPath(), newFld.getCanonicalPath());
-                } catch (IOException ex) {
+                } catch (IOException | SQLException ex) {
                     Logger.getLogger(AccountManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -583,38 +598,36 @@ public class AccountManager implements Serializable{
     public String getRootDirectoryAsString(){
         return "/";
     }
-//    
-//    public long getUsedSpace() {
-//        return info.getUsedSpace();
-//    }
-//    
-//    public void addFile(long fileLenght){
-//        info.addUsedSpace(fileLenght);
-//    }
-//    
-//    public void removeFile(long fileLenght){
-//        info.removeUsedSpace(fileLenght);
-//    }
-//
-//    public long getAvailableSpace(){
-//        return getTotalSpace()-getUsedSpace();
-//    }
-//    
-//    public long getTotalSpace() {
-//        return info.getTotalSpace();
-//    }
-//
-//    public void setTotalSpace(long totalSpace) {
-//        info.setTotalSpace(totalSpace);
-//    }
-//
-//    public Date getCreationDate() {
-//        return info.getCreationDate();
-//    }
+    
+    public long getUsedSpace() {
+        return account.getUsedSpace();
+    }
+    
+    public void addFile(long fileLenght) throws SQLException{
+        account.addUsedSpace(fileLenght);
+        dbManager.addFile(fileLenght, account.getId());
+    }
+    
+    public void removeFile(long fileLenght) throws SQLException{
+        account.removeUsedSpace(fileLenght);
+        dbManager.removeFile(fileLenght, account.getId());
+    }
+
+    public long getAvailableSpace(){
+        return getTotalSpace()-getUsedSpace();
+    }
+    
+    public long getTotalSpace() {
+        return account.getTotalSpace();
+    }
+
+    public Date getCreationDate() {
+        return account.getCreationDate();
+    }
 
     @Override
     public String toString() {
-        return "Cloud{" + "rootDirectory=" + rootDirectory + ", info=" + info + '}';
+        return "AccountManager{" + "rootDirectory=" + rootDirectory + ", account=" + account + '}';
     }
 
 }

@@ -53,7 +53,7 @@ public class Server extends Thread{
 //        return dbManager.isNickAvailable(user);
 //    }
 
-    public synchronized boolean isValidRegistration(String nick) throws SQLException{
+    public synchronized boolean isNickAvailable(String nick) throws SQLException{
         return dbManager.isNickAvailable(nick);
     }
     
@@ -70,35 +70,37 @@ public class Server extends Thread{
         tClientsCount++;
     }
     
-    public synchronized void addUser(User user) throws IOException{
+    public synchronized void addUser(User user) throws IOException, SQLException{
         dbManager.addUser(user);
     }
 
     public synchronized boolean addUser(String nick, String passw) throws SQLException{
-        final boolean isValid = isValidRegistration(nick);
+        final boolean isValid = isNickAvailable(nick);
         if (isValid) dbManager.addUser(nick, passw);
         return isValid;
     }
 
-    public synchronized void removeUser(int id){
+    public synchronized void removeUser(int id) throws SQLException{
         dbManager.removeUser(id);
     }
     
-    public synchronized void removeUser(String nick){
-        dbManager.removeUser(nick);
+    public synchronized void removeUser(String nick) throws SQLException{
+        dbManager.removeUserByNick(nick);
     }
     
-    public synchronized int getUsersCount(){
+    public synchronized long getUsersCount() throws SQLException{
         return dbManager.getUsersCount();
     }
     
-    public synchronized User getUser(String nick){
-        return dbManager.getUser(nick);
+    public synchronized User getUser(String nick) throws SQLException{
+        return dbManager.getUserByNick(nick);
     }
     
-    public synchronized User getUser(String nick, String password){
-        User u = dbManager.getUser(nick, password);
-        return u == null ? new User() : u;
+    public synchronized User getUser(String nick, String password) throws SQLException{
+        boolean existsUser = isValidUser(nick, password);
+        if (existsUser) return getUser(nick);
+        return new User();
+        
     }
     
     public synchronized void removeClient(int id){

@@ -40,7 +40,7 @@ public class TClient extends Thread implements Transmissible, Receivable{
         return client;
     }
 
-    public AccountManager getCloud(){
+    public AccountManager getAccountManager(){
         return client.getAccountManager();
     }
     

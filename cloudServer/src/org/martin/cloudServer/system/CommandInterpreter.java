@@ -11,7 +11,9 @@ import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.model.packages.ClientPackage;
 import org.martin.cloudCommon.model.packages.TransferPackage;
 import org.martin.cloudCommon.model.packages.UserPackage;
+import org.martin.cloudCommon.system.Account;
 import org.martin.cloudCommon.system.Command;
+import org.martin.cloudServer.db.DbManager;
 import org.martin.cloudServer.net.Client;
 import org.martin.cloudServer.net.Server;
 import org.martin.cloudServer.net.threads.TClient;
@@ -28,32 +30,36 @@ public class CommandInterpreter {
 
     // Se debe tener como objeto ya que debe ser un interprete por cada hilo
     // para evitar las sincronizaciones
+
     public CommandInterpreter(){}
     
-    public void execCommand(Command cmd, TOperatorRequest tor) throws IOException, SQLException{
+    public void execCommand(Command cmd, TOperatorRequest operatorRequest) throws IOException, SQLException{
         final String firstOption = cmd.getFirstOption();
         final String secondOption = cmd.getOption(1);
         
         if (cmd.isEqualsOrder(Command.loginU)){
-            final User u = Server.getInstance().getUser(firstOption, secondOption);
-            if (u.isNull()) {
-                tor.sendObject(new UserPackage(null));
-                tor.closeConnection();
+            final User user = Server.getInstance().getUser(firstOption, secondOption);
+            if (user.isNull()) {
+                operatorRequest.sendObject(new UserPackage(null));
+                operatorRequest.closeConnection();
             }
             else{
-                tor.sendObject(new UserPackage(new ClientPackage(u, 
-                        u.getCloud().getInfo(), u.getCloud().root())));
-                Server.getInstance().addClient(new Client(u, tor.getSockRequest()));
-                tor.closeStreams();
+                final DbManager xpressConnection = new DbManager();
+                final Account userAccount = xpressConnection.getAccountByUser(user.getId());
+                operatorRequest.sendObject(new UserPackage(new ClientPackage(userAccount)));
+                Server.getInstance().addClient(new Client(
+                        user, operatorRequest.getSockRequest(), userAccount));
+                
+                operatorRequest.closeStreams();
             }
         }
         else if (cmd.isEqualsOrder(Command.regU))
-            tor.sendObject(Server.getInstance().addUser(firstOption, secondOption));
+            operatorRequest.sendObject(Server.getInstance().addUser(firstOption, secondOption));
         
     }
 
     public void execCommand(Command cmd, TClient tClient) throws IOException, SQLException {
-        final AccountManager clientCloud = tClient.getCloud();
+        final AccountManager clientCloud = tClient.getAccountManager();
         final String firstOption = cmd.getFirstOption();
         final String secondOption = cmd.getOption(1);
         
@@ -103,14 +109,14 @@ public class CommandInterpreter {
             tClient.sendObject(clientCloud.root());
     }
     
-    public void execSpecialCommand(TransferPackage tp, TClient tClient) throws IOException{
+    public void execSpecialCommand(TransferPackage tp, TClient tClient) throws IOException, SQLException{
 
         // Revisar la logica del codigo
         if (tp.getCommand().isEqualsOrder(Command.uplD))
-            tClient.getCloud().uplD(tp.getFolder());
+            tClient.getAccountManager().uplD(tp.getFolder());
             
         else if (tp.getCommand().isEqualsOrder(Command.uplF))
-            tClient.getCloud().uplF(tp.getArchive());
+            tClient.getAccountManager().uplF(tp.getArchive());
         
     }
 }

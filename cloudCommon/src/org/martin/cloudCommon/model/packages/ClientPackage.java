@@ -16,38 +16,32 @@ import org.martin.cloudCommon.system.SysInfo;
  * @author martin
  */
 public class ClientPackage implements Serializable{
-    private final User df;
-    private Account info;
+    private final Account account;
     private File currentDir;
 
-    public static ClientPackage newInstance(User df, Account info, File currentDir){
-        return new ClientPackage(df, info, currentDir);
+    public static ClientPackage newInstance(Account account, File currentDir){
+        return new ClientPackage(account);
     }
     
-    public ClientPackage(User df, Account info, File currentDir) {
-        this.df = df;
-        this.info = info;
-        this.currentDir = currentDir;
+    public ClientPackage(Account account) {
+        this.account = account;
+        this.currentDir = new File(SysInfo.ROOT_FOLDER_NAME, account.getRootDirName());
     }
 
-    public User getDf() {
-        return df;
+    public User getUser() {
+        return account.getUser();
     }
 
     public String getUserNick(){
-        return df.getNick();
+        return account.getUser().getNick();
     }
     
     public String getUserPassword(){
-        return df.getPassword();
+        return account.getUser().getPassword();
     }
     
-    public Account getInfo() {
-        return info;
-    }
-
-    public void setInfo(Account info) {
-        this.info = info;
+    public Account getAccount() {
+        return account;
     }
 
     public File getCurrentDir() {

@@ -6,7 +6,6 @@
 package org.martin.cloudServer.db;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -183,9 +182,30 @@ public final class DbManager {
         return user;
     }
     
+    public User getUserByNick(String nick) throws SQLException{
+        final User user;
+        final ResultSet res = connection.call("getUserByNick", nick);
+        
+        if(res.next())
+            user = new User(res.getLong(1), res.getString(2), res.getString(3));
+        else
+            user = null;
+        
+        res.close();
+        return user;
+    }
+    
     public void addAccount(Account account) throws SQLException{
-        connection.call("addAccount", account.getIdUser(), account.getRootDirName(), account.getUsedSpace(), 
+        connection.call("addAccount", account.getUser(), account.getRootDirName(), account.getUsedSpace(), 
                 account.getTotalSpace(), account.getCreationDate());
+    }
+
+    public void addFile(long fileSize, long idAccount) throws SQLException{
+        connection.call("addFile", fileSize, idAccount);
+    }
+    
+    public void removeFile(long fileSize, long idAccount) throws SQLException{
+        connection.call("removeFile", fileSize, idAccount);
     }
     
     public Account getAccount(long id) throws SQLException{
@@ -214,7 +234,30 @@ public final class DbManager {
         return account;
     }
     
+    public void removeAccount(long id) throws SQLException{
+        connection.call("removeAccount", id);
+        
+    }
     
+    public void removeAccountByUser(long idUser) throws SQLException{
+        connection.call("removeAccountByUser", idUser);
+    }
+    
+    public void removeAllAccounts() throws SQLException{
+        connection.call("removeAllAccounts");
+    }
+    
+    public void removeUser(long id) throws SQLException{
+        connection.call("removeUser", id);
+    }
+    
+    public void removeUserByNick(String nick) throws SQLException{
+        connection.call("removeUserByNick", nick);
+    }
+    
+    public void removeAllUsers() throws SQLException{
+        connection.call("removeAllUsers");
+    }
     
 //    private void printUsers(){
 //        System.out.println("Usuarios\n--------\n");
@@ -222,13 +265,5 @@ public final class DbManager {
 //        users.forEach(System.out::println);
 //    }
     
-    public void removeUser(int id){
-    }
-    
-    public void removeUser(String nick){
-    }
-    
-    public void removeAllUsers(){
-    }
 
 }

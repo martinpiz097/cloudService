@@ -20,7 +20,7 @@ public class Account implements Serializable{
     // Todos los espacios son en bytes
     private final long id;
     private long usedSpace;
-    private final User idUser;
+    private final User user;
     private final String rootDirName;
     private long totalSpace;
     private final Date creationDate;
@@ -29,7 +29,7 @@ public class Account implements Serializable{
     public Account(long id, User user, String rootDirName, long totalSpace) {
         this.id = id;
         this.usedSpace = 0;
-        this.idUser = user;
+        this.user = user;
         this.rootDirName = rootDirName;
         this.totalSpace = totalSpace;
         c = new GregorianCalendar();
@@ -39,7 +39,7 @@ public class Account implements Serializable{
     public Account(long id, long usedSpace, User user, String rootDirName, long totalSpace, Date creationDate) {
         this.id = id;
         this.usedSpace = usedSpace;
-        this.idUser = user;
+        this.user = user;
         this.rootDirName = rootDirName;
         this.totalSpace = totalSpace;
         this.creationDate = creationDate;
@@ -66,8 +66,8 @@ public class Account implements Serializable{
         this.usedSpace-=fileLenght;
     }
 
-    public User getIdUser() {
-        return idUser;
+    public User getUser() {
+        return user;
     }
 
     public String getRootDirName() {
