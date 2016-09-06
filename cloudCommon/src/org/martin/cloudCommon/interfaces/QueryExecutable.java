@@ -16,7 +16,7 @@ public interface QueryExecutable {
     public void exec(String query) throws SQLException;
     public ResultSet execSelect(String query) throws SQLException;
     public void insert(String table, Object...fields) throws SQLException;
-    public ResultSet select(String table, String where, Object... fields) throws SQLException;
+    //public ResultSet select(String table, String where, Object... fields) throws SQLException;
     public ResultSet select(String functionName, Object... parameters) throws SQLException;
     public ResultSet select(String functionName) throws SQLException;
     public void update(String table, String where, String... sets) throws SQLException;

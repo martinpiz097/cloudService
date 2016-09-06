@@ -15,13 +15,13 @@ import java.util.LinkedList;
 public class Command implements Serializable{
     
     private final String order;
-    private final String[] options;
+    private String[] options;
     
     // @uplF rutaLocal rutaRemota --> subir archivo
     /**
      * @uplF rutaLocal rutaRemota --> subir archivo
      */
-    public static final Command uplF = Command.newInstance("uplF");
+    public static final Command uplF = Command.newInstance("@uplF");
 
     // @dwnF rutaLocal rutaRemota --> bajar archivo
     /**
@@ -113,6 +113,20 @@ public class Command implements Serializable{
      */
     public static final Command loginU = Command.newInstance("@loginU");
     
+    
+    // @close --> cierra la conexion
+    /**
+     * @close --> cierra la conexion
+     */
+    
+    public static final Command close = Command.newInstance("@close");
+    
+    // @mkd folderName remotePath --> crea una carpeta
+    /**
+     * @mkd folderName remotePath --> crea una carpeta
+     */
+    public static final Command mkd = Command.newInstance("@mkd");
+    
     public static Command newInstance(String strCommand){
         return new Command(strCommand);
     }
@@ -130,31 +144,65 @@ public class Command implements Serializable{
 
     public Command(String... strCommand){
         final int len = strCommand.length;
+        System.out.println("Cantidad de opciones del comando: " + (len-1));
         order = strCommand[0];
         if (len == 1) options = null;
         
         else{
             options = new String[len-1];
             for (int i = 1; i < len; i++)
-                strCommand[i] = options[i-1];
+                options[i-1] = strCommand[i];
         }
     }
 
     public boolean hasOptions(){
-        return options != null;
+        return options != null && options.length > 0;
+    }
+
+    public void addOption(String option){
+        if(option == null) return;
+        
+        if (!hasOptions()) {
+            options = new String[1];
+            options[0] = option;
+        }
+        
+        else{
+            final String[] aux = new String[options.length+1];
+            System.arraycopy(options, 0, aux, 0, options.length);
+            aux[aux.length-1] = option;
+            options = aux;
+        }
+        
+    }
+    
+//    public boolean isValid(){
+//        if(order == null) return false;
+//        if(!order.startsWith("@") || options == null) return false;
+//        return this.isEquals(Command.access) || this.isEquals(Command.back) ||
+//                this.isEquals(Command.cpD) || this.isEquals(Command.cpF) ||
+//                this.isEquals(Command.ctD) || this.isEquals(Command.ctF) ||
+//                this.isEquals(Command.delD) || this.isEquals(Command.delF) ||
+//                this.isEquals(Command.dwnD) || this.isEquals(Command.dwnF) ||
+//                this.isEquals(Command.list) || this.isEquals(Command.loginU) ||
+//                this.isEquals(Command.regU) || this.isEquals(Command.root) ||
+//                this.isEquals(Command.uplD) || this.isEquals(Command.uplF);
+//    }
+
+    public int getOptionsCount(){
+        return hasOptions() ? options.length : 0;
     }
     
     public boolean isValid(){
         if(order == null) return false;
-        if(!order.startsWith("@") || options == null) return false;
-        return this.isEquals(Command.access) || this.isEquals(Command.back) ||
-                this.isEquals(Command.cpD) || this.isEquals(Command.cpF) ||
-                this.isEquals(Command.ctD) || this.isEquals(Command.ctF) ||
-                this.isEquals(Command.delD) || this.isEquals(Command.delF) ||
-                this.isEquals(Command.dwnD) || this.isEquals(Command.dwnF) ||
-                this.isEquals(Command.list) || this.isEquals(Command.loginU) ||
-                this.isEquals(Command.regU) || this.isEquals(Command.root) ||
-                this.isEquals(Command.uplD) || this.isEquals(Command.uplF);
+        if(!order.startsWith("@")) return false;
+
+        return order.equals("@access") || order.equals("@back") || order.equals("@cpD") ||
+                order.equals("@cpF") || order.equals("@ctD") || order.equals("@ctF") ||
+                order.equals("@delD") || order.equals("@delF") || order.equals("@dwnD") ||
+                order.equals("@dwnF") || order.equals("@list") || order.equals("@loginU") ||
+                order.equals("@regU") || order.equals("@root") || order.equals("@uplD") ||
+                order.equals("@uplF") || order.equals("@close") || order.equals("@mkd");
     }
     
     public boolean isEqualsOrder(Command otherCommand){
@@ -164,10 +212,11 @@ public class Command implements Serializable{
     public boolean isEquals(Command otherCommand){
         boolean isEquals = otherCommand.isValid() && isValid();
         if(!isEquals) return isEquals;
+    
         isEquals = order.equalsIgnoreCase(otherCommand.getOrder());
         if(!isEquals) return isEquals;
-        isEquals = Arrays.equals(options, otherCommand.getOptions());
-        return isEquals;
+        
+        return Arrays.equals(options, otherCommand.getOptions());
     }
 
     public String getOrder() {
@@ -175,13 +224,19 @@ public class Command implements Serializable{
     }
 
     public String getFirstOption(){
-        return (options != null) ? options[0] : null;
+        System.out.println((options != null) ? options.length : "Es nulo");
+        return (hasOptions()) ? options[0] : null;
     }
     
     public String[] getOptions() {
         return options;
     }
 
+    public void setOptions(String... newOptions){
+        if(newOptions == null) return;
+        options = newOptions;
+    }
+    
     /**
      * Obtiene las opciones de este objeto como una lista
      * @return Objeto de tipo LinkedList con las opciones de este comando
@@ -223,9 +278,9 @@ public class Command implements Serializable{
      * @param index Índice de la opción solicitada
      * @return La opción solicitada por el índice
      */
-    public String getOption(int index){
-        if(options == null) return null;
-        return (options.length >= index+1 && index >= 0) ? options[index] : null;
+    public String getOptionAt(int index){
+        if(!hasOptions()) return null;
+        return (options.length > index && index >= 0) ? options[index] : null;
     }
 
     public static Command newRegU(String... options){
@@ -241,4 +296,10 @@ public class Command implements Serializable{
             strCommand += (option + " ");
         return new Command(strCommand);
     }
+
+    @Override
+    public String toString() {
+        return "Command{" + "order=" + order + ", options=" + Arrays.toString(options) + '}';
+    }
+
 }

@@ -6,7 +6,6 @@
 package org.martin.cloudCommon.model.packages;
 
 import java.io.Serializable;
-import org.martin.cloudCommon.system.SysInfo;
 
 /**
  *

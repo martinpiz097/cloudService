@@ -72,37 +72,6 @@ public class DbConnection implements QueryExecutable{
     }
 
     @Override
-    public ResultSet select(String table, String where, Object... fields) throws SQLException {
-        if (fields == null)
-            if (where == null)
-                strQuery = "select * from " + table;
-            else
-                strQuery = "select * from " + table + " where " + where;
-        
-        else if (fields.length == 1 && fields[0].toString().equals("*"))
-            if (where == null)
-                strQuery = "select * from " + table;
-            else
-                strQuery = "select * from " + table + " where " + where;
-        
-        else{
-            strQuery = "select ";
-            
-            for (int i = 0; i < fields.length; i++)
-                if (i < fields.length-1)
-                    strQuery+=("'"+fields[i]+"',");
-                
-                else
-                    strQuery+=("'"+fields[i]+"')");
-            strQuery+=(" from " + table);
-            
-            if (where != null)
-                strQuery+=(" where " + where);
-        }
-        return con.createStatement().executeQuery(strQuery);
-    }
-    
-    @Override
     public ResultSet select(String functionName, Object... parameters) throws SQLException{
         strQuery = "select " + functionName + "(";
         final int lenParameters = parameters.length;
@@ -111,7 +80,7 @@ public class DbConnection implements QueryExecutable{
                 strQuery+=("'"+parameters[i]+"',");
             else
                 strQuery+=("'"+parameters[i]+"')");
-        
+    
         return con.createStatement().executeQuery(strQuery);
     }
 
@@ -149,6 +118,7 @@ public class DbConnection implements QueryExecutable{
                 strQuery+=("'"+atributes[i]+"'");
         
         strQuery+=")";
+        
         return con.createStatement().executeQuery(strQuery);
     }
     
@@ -157,5 +127,5 @@ public class DbConnection implements QueryExecutable{
         strQuery = "call " + procedureName + "()";
         return con.createStatement().executeQuery(strQuery);
     }
-    
+
 }

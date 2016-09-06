@@ -35,7 +35,7 @@ public class CommandInterpreter {
     
     public void execCommand(Command cmd, TOperatorRequest operatorRequest) throws IOException, SQLException{
         final String firstOption = cmd.getFirstOption();
-        final String secondOption = cmd.getOption(1);
+        final String secondOption = cmd.getOptionAt(1);
         
         if (cmd.isEqualsOrder(Command.loginU)){
             final User user = Server.getInstance().getUser(firstOption, secondOption);
@@ -43,14 +43,23 @@ public class CommandInterpreter {
                 operatorRequest.sendObject(new UserPackage(null));
                 operatorRequest.closeConnection();
             }
+
             else{
-                final DbManager xpressConnection = new DbManager();
-                final Account userAccount = xpressConnection.getAccountByUser(user.getId());
+                // Algoritmo que comprueba si el cliente esta o no conectado
+//                boolean isConnected = Server.getInstance().isClientConnected(user.getId());
+//                if (isConnected) {
+//                    operatorRequest.sendObject(new UserPackage(null));
+//                    operatorRequest.closeConnection();
+//                }
+
+                DbManager xpressConnection = new DbManager();
+                Account userAccount = xpressConnection.getAccountByUser(user.getId());
                 operatorRequest.sendObject(new UserPackage(new ClientPackage(userAccount)));
-                Server.getInstance().addClient(new Client(
-                        user, operatorRequest.getSockRequest(), userAccount));
-                
-                operatorRequest.closeStreams();
+                // Creando nuevos streams y olvidando los viejos ahorra algo de RAM
+                // pero hay que averiguar en que afecta que estos streams queden en el olvido
+
+                Server.getInstance().addClient(new Client(user, operatorRequest.getSockRequest(),
+                        userAccount));
             }
         }
         else if (cmd.isEqualsOrder(Command.regU))
@@ -60,14 +69,23 @@ public class CommandInterpreter {
 
     public void execCommand(Command cmd, TClient tClient) throws IOException, SQLException {
         final AccountManager clientCloud = tClient.getAccountManager();
-        final String firstOption = cmd.getFirstOption();
-        final String secondOption = cmd.getOption(1);
+        System.out.println("Cmd: " + cmd);
+        System.out.println("Cantidad de opciones: " + cmd.getOptionsCount());
+        
+        String firstOption = cmd.hasOptions() ? cmd.getFirstOption() : null;
+        String secondOption = cmd.hasOptions() ? cmd.getOptionAt(1) : null;
         
         if (cmd.isEqualsOrder(Command.access))
             tClient.sendObject(clientCloud.access(firstOption));
             
         else if (cmd.isEqualsOrder(Command.back))
             tClient.sendObject(clientCloud.back(firstOption));
+
+        else if (cmd.isEqualsOrder(Command.close)) {
+            tClient.closeConnection();
+            Server.getInstance().removeClient(tClient.getClient().getIdUser());
+            tClient = null;
+        }
         
 //        else if (cmd.isEqualsOrder(Command.cpD))
 //            clientCloud.cpD(firstOption, secondOption);
@@ -100,23 +118,34 @@ public class CommandInterpreter {
             final User user = Server.getInstance().getUser(firstOption, secondOption);
             // Si recibe un usuario que no es null significa que esta correcto el login
             tClient.sendObject(user);
-            
         }
+
         else if (cmd.isEqualsOrder(Command.regU))
             tClient.sendObject(Server.getInstance().addUser(firstOption, secondOption));
         
         else if (cmd.isEqualsOrder(Command.root))
             tClient.sendObject(clientCloud.root());
+    
+        else if (cmd.isEqualsOrder(Command.mkd)){
+            System.out.println("Es mkd");
+            tClient.getAccountManager().mkd(firstOption, secondOption);
+        } 
+        
     }
     
     public void execSpecialCommand(TransferPackage tp, TClient tClient) throws IOException, SQLException{
 
+        System.out.println("Estamos en el execSpecialCommand;cmd: "+tp.getCommand());
         // Revisar la logica del codigo
         if (tp.getCommand().isEqualsOrder(Command.uplD))
             tClient.getAccountManager().uplD(tp.getFolder());
             
-        else if (tp.getCommand().isEqualsOrder(Command.uplF))
-            tClient.getAccountManager().uplF(tp.getArchive());
+        else if (tp.getCommand().isEqualsOrder(Command.uplF)){
+            System.out.println("Es uplF");
+            tClient.getAccountManager().uplF(
+                    tp.getCommand().getOptionAt(1), tp.getArchive());
+        }
+            
         
     }
 }

@@ -29,19 +29,31 @@ public class Client {
     public Client(User user, Socket socket, Account account) throws IOException, SQLException {
         this.idUser = user.getId();
         this.user = user;
-        this.accountManager = new AccountManager(this.user, account);
+        this.accountManager = new AccountManager(account);
         this.socket = socket;
         this.output = new ObjectOutputStream(this.socket.getOutputStream());
         this.input = new ObjectInputStream(this.socket.getInputStream());
     }
 
-    public Client(User user, Socket socket, Account account, ObjectOutputStream output, ObjectInputStream input) throws SQLException {
+    public Client(User user, Socket socket, Account account, ObjectOutputStream output, ObjectInputStream input) throws SQLException, IOException {
         this.idUser = user.getId();
         this.user = user;
-        this.accountManager = new AccountManager(this.user, account);
+        this.accountManager = new AccountManager(account);
         this.socket = socket;
+        output = new ObjectOutputStream(socket.getOutputStream());
+        input = new ObjectInputStream(socket.getInputStream());
         this.output = output;
         this.input = input;
+    }
+    
+    public void closeStreams() throws IOException{
+        input.close();
+        output.close();
+    }
+    
+    public void closeConnection() throws IOException{
+        closeStreams();
+        socket.close();
     }
     
     public long getIdUser() {
@@ -54,6 +66,10 @@ public class Client {
 
     public AccountManager getAccountManager(){
         return accountManager;
+    }
+
+    public Socket getSocket() {
+        return socket;
     }
     
     public ObjectOutputStream getOutput() {

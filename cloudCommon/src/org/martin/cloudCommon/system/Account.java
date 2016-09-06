@@ -24,26 +24,34 @@ public class Account implements Serializable{
     private final String rootDirName;
     private long totalSpace;
     private final Date creationDate;
-    private static transient Calendar c;
+    //private static transient Calendar c;
 
+    // Constructor por defecto para añadir cuentas a la db
+    public Account(User user, long totalSpace){
+        this.id = -1;
+        this.usedSpace = 0;
+        this.user = user;
+        this.rootDirName = SysManager.getRootDirectoryName(user);
+        this.totalSpace = totalSpace;
+        this.creationDate = null;
+    }
+    
     public Account(long id, User user, String rootDirName, long totalSpace) {
         this.id = id;
         this.usedSpace = 0;
         this.user = user;
         this.rootDirName = rootDirName;
         this.totalSpace = totalSpace;
-        c = new GregorianCalendar();
-        creationDate = c.getTime();
+        this.creationDate = null;
     }
 
-    public Account(long id, long usedSpace, User user, String rootDirName, long totalSpace, Date creationDate) {
+    public Account(long id, User user, String rootDirName, long usedSpace, long totalSpace, Date creationDate) {
         this.id = id;
         this.usedSpace = usedSpace;
         this.user = user;
         this.rootDirName = rootDirName;
         this.totalSpace = totalSpace;
         this.creationDate = creationDate;
-        c = new GregorianCalendar();
     }
 
     public long getId() {

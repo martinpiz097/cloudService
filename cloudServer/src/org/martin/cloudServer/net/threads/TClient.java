@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.martin.cloudCommon.interfaces.Receivable;
 import org.martin.cloudCommon.interfaces.Transmissible;
-import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.model.packages.TransferPackage;
 import org.martin.cloudServer.system.AccountManager;
 import org.martin.cloudCommon.system.Command;
@@ -25,13 +24,24 @@ import org.martin.cloudServer.system.CommandInterpreter;
 public class TClient extends Thread implements Transmissible, Receivable{
     private final Client client;
     private final CommandInterpreter ci;
+    private boolean isConnected;
     
     public TClient(Client client) {
         this.client = client;
         ci = new CommandInterpreter();
+        isConnected = true;
         start();
     }
 
+    public void closeStreams() throws IOException{
+        client.closeStreams();
+    }
+    
+    public void closeConnection() throws IOException{
+        client.closeConnection();
+        isConnected = false;
+    }
+    
     public boolean hasDataReceived() throws IOException, ClassNotFoundException{
         return getReceivedObject() != null;
     }
@@ -47,15 +57,11 @@ public class TClient extends Thread implements Transmissible, Receivable{
     @Override
     public void sendObject(Object obj) throws IOException {
         client.getOutput().writeObject(obj);
-        client.getOutput().flush();
     }
 
     @Override
     public Object getReceivedObject() throws IOException, ClassNotFoundException {
-        Object received = null;
-        do received = client.getInput().readObject();
-        while(received == null);
-        return received;
+        return client.getInput().readObject();
     }
     
     @Override
@@ -63,19 +69,26 @@ public class TClient extends Thread implements Transmissible, Receivable{
         Object objReceived;
         TransferPackage transPack;
         Command cmd;
-        User df;
-        boolean operacionValida;
-        
-        while (true) {
+
+        while (isConnected) {
             try {
                 // Queda pendiente las operaciones con el cloud
                 // ya que deben hacerse por comandos
-                do objReceived = getReceivedObject();
-                while (objReceived == null);
+
+                System.out.println("Antes del nuevo objeto en TCLIENT");
+                objReceived = null;
+                while (objReceived == null)
+                    objReceived = getReceivedObject();
+                System.out.println("Ha llegado un objeto en TCLIENT");
+                System.out.println("Clase del objeto: " + objReceived.getClass().getName());
                 
                 if (objReceived instanceof TransferPackage) {
                     transPack = (TransferPackage) objReceived;
-                    if (transPack.getCommand().isValid()) ci.execSpecialCommand(transPack, this);
+                    System.out.println("Entramos al if del transPack; cmd: " + transPack.getCommand());
+                    if (transPack.getCommand().isValid()) {
+                        System.out.println("El comando es valido");
+                        ci.execSpecialCommand(transPack, this);
+                    }
                 }
                 else if (objReceived instanceof Command) {
                     cmd = (Command) objReceived;
@@ -87,5 +100,6 @@ public class TClient extends Thread implements Transmissible, Receivable{
                 Logger.getLogger(TClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        System.out.println("Hilo cliente "+client.getUser().getNick()+" finalizado");
     }
 }

@@ -26,6 +26,15 @@ public class ClientPackage implements Serializable{
     public ClientPackage(Account account) {
         this.account = account;
         this.currentDir = new File(SysInfo.ROOT_FOLDER_NAME, account.getRootDirName());
+        System.out.println("Existe: "+currentDir.exists());
+        System.out.println("Es directorio: "+currentDir.isDirectory());
+        if (currentDir.listFiles() != null) {
+            for (File file : currentDir.listFiles())
+                System.out.println(file.getName());
+        }
+        
+        // Por sea caso
+        if(!this.currentDir.exists()) currentDir.mkdir();
     }
 
     public User getUser() {
@@ -47,17 +56,17 @@ public class ClientPackage implements Serializable{
     public File getCurrentDir() {
         return currentDir;
     }
-
+    
     public File[] listFiles(){
         return currentDir.listFiles();
     }
     
     public File[] getOnlyFiles(){
-        return currentDir.listFiles(f -> !f.isDirectory());
+        return listFiles() == null ? null : currentDir.listFiles(f -> !f.isDirectory());
     }
     
     public File[] getOnlyDirectories(){
-        return currentDir.listFiles(File::isDirectory);
+        return listFiles() == null ? null : currentDir.listFiles(File::isDirectory);
     }
     
     public void setCurrentDir(File currentDir) {

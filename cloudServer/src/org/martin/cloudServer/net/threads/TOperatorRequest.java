@@ -62,7 +62,6 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
     @Override
     public void sendObject(Object obj) throws IOException {
         output.writeObject(obj);
-        output.flush();
     }
 
     @Override
@@ -85,8 +84,16 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
                 System.out.println("Respuesta enviada");
             }
             System.out.println("Al final del tor");
-        } catch (IOException | ClassNotFoundException | SQLException ex) {
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("Exception en el tor");
             Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            try {
+                closeConnection();
+                //Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex1) {
+                Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         }
 
     }

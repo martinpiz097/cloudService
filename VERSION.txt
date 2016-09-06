@@ -6,3 +6,11 @@
 	Client --> Problemas con el login, ya que existen errores al mostrar la ventana
 
 
+0.9 Server --> Funciona la mayoria de las operaciones, falta probar todo lo relacionado a 
+		carpetas y la bajada de archivos. Recordar que se debe revisar las operaciones
+		que ya funcionan y verificar cuando y por qué ocurren excepciones.
+
+    Client --> Operaciones como subida de archivos, acceso a raiz, a directorios y volver atrás funcionan
+		correctamente. La subida de archivos puede ser de uno o varios. Se ha comenzado a rediseñar la gui 
+		para mostrar los archivos en una tabla y desde ahi con un click ver opciones, para así tener un mayor
+		orden.

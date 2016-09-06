@@ -6,6 +6,9 @@
 package org.martin.cloudClient.model;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
 
@@ -13,28 +16,37 @@ import javax.swing.event.ListDataListener;
  *
  * @author martin
  */
-public class LMDirectories implements ListModel<File>{
+public class LMDirectories extends DefaultListModel<String> implements ListModel<String>{
     
     private File[] directories;
     
     public LMDirectories(File directory) {
-        if (directory != null) 
-            directories = directory.listFiles(File::isDirectory);
-        
+        if (directory != null){
+            File[] dirs = directory.listFiles(File::isDirectory);
+            if (dirs != null) {
+                directories = dirs;
+                Arrays.sort(dirs, File::compareTo);
+            }
+            else
+                directories = null;
+        }
+        else
+            directories = null;
     }
     
     public void setDirectories(File directory){
         directories = directory.listFiles(File::isDirectory);
     }
-
+    
     @Override
     public int getSize() {
-        return directories.length;
+        return directories == null ? 0 : directories.length;
     }
 
     @Override
-    public File getElementAt(int index) {
-        return directories[index];
+    public String getElementAt(int index) {
+        return directories == null ? null : 
+                (directories.length == 0 ? null : directories[index].getName());
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.io.Serializable;
 import org.martin.cloudCommon.system.Archive;
 import org.martin.cloudCommon.system.Command;
 import org.martin.cloudCommon.system.Folder;
-import org.martin.cloudCommon.system.SysInfo;
 
 /**
  *

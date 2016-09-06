@@ -8,16 +8,17 @@ package org.martin.cloudServer.net;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.martin.cloudCommon.model.User;
-import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.system.SysInfo;
 import org.martin.cloudServer.db.DbManager;
 import org.martin.cloudServer.net.threads.TClient;
 import org.martin.cloudServer.net.threads.TOperatorRequest;
+import org.martin.cloudServer.system.AccountManager;
 
 /**
  *
@@ -64,19 +65,33 @@ public class Server extends Thread{
     public synchronized boolean isValidUser(String user, String passw) throws SQLException{
         return dbManager.isValidUser(user, passw);
     }
+
+    public synchronized boolean isClientConnected(long userId){
+        return tClientsRunning.stream()
+                .anyMatch(tc -> tc.getClient().getIdUser() == userId);
+    }
     
-    public synchronized void addClient(Client client){
+    public synchronized boolean isClientConnected(String nick){
+        return tClientsRunning.stream()
+                .anyMatch(tc -> tc.getClient().getUser().getNick().equals(nick));
+    }
+    
+    public synchronized void addClient(Client client) throws SocketException{
+        client.getSocket().setSoLinger(true, 3);
         tClientsRunning.add(new TClient(client));
         tClientsCount++;
     }
     
     public synchronized void addUser(User user) throws IOException, SQLException{
         dbManager.addUser(user);
+        AccountManager.createRootDirectory(user);
     }
 
-    public synchronized boolean addUser(String nick, String passw) throws SQLException{
+    public synchronized boolean addUser(String nick, String passw) throws SQLException, IOException{
         final boolean isValid = isNickAvailable(nick);
-        if (isValid) dbManager.addUser(nick, passw);
+        if (isValid) 
+            addUser(new User(nick, passw));
+        
         return isValid;
     }
 
@@ -103,14 +118,14 @@ public class Server extends Thread{
         
     }
     
-    public synchronized void removeClient(int id){
+    public synchronized void removeClient(long id){
         tClientsRunning.removeIf(tc -> tc.getClient().getIdUser() == id);
         tClientsCount--;
     }
     
     public synchronized void removeClient(String nick){
         tClientsRunning
-                .removeIf(tc -> tc.getClient().getUser().getNick().equalsIgnoreCase(nick));
+                .removeIf(tc -> tc.getClient().getUser().getNick().equals(nick));
         tClientsCount--;
     }
     

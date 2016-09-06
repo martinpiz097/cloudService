@@ -12,8 +12,9 @@ package org.martin.cloudCommon.system;
 public class SysInfo {
     public static final String DEFAULT_HOST = "190.161.190.114";
     public static final String LOCALHOST = "localhost";
-    public static final String ROOT_FOLDER_NAME = "electroCloud";
     public static final String OS_NAME = System.getProperty("os.name");
+    public static final String USER_NAME = System.getProperty("user.name");
+    public static final String ROOT_FOLDER_NAME = "/home/"+USER_NAME+"/electroCloud";
     public static final String DB_USERS_FILE_NAME = "dbCloud.db";
     public static final long TOTAL_SPACE = 1073741824;
     public static final int DEFAULT_PORT = 2000;

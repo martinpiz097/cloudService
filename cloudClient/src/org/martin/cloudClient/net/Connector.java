@@ -20,13 +20,38 @@ import org.martin.cloudCommon.system.Command;
  */
 public class Connector implements Transmissible, Receivable{
     private final Socket socket;
-    private final ObjectOutputStream output;
-    private final ObjectInputStream input;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
     
     public Connector(Socket socket) throws IOException {
         this.socket = socket;
-        output = new ObjectOutputStream(this.socket.getOutputStream());
-        input = new ObjectInputStream(this.socket.getInputStream());
+        this.output = new ObjectOutputStream(this.socket.getOutputStream());
+        this.input = new ObjectInputStream(this.socket.getInputStream());
+    }
+    
+    public void reinstanceOuputStream() throws IOException{
+        output = new ObjectOutputStream(socket.getOutputStream());
+    }
+    
+    public void reinstanceInputStream() throws IOException{
+        input = new ObjectInputStream(socket.getInputStream());
+    }
+    
+    public void reinstanceStreams() throws IOException{
+        reinstanceOuputStream();
+        reinstanceInputStream();
+    }
+    
+    public void closeStreams() throws IOException{
+        input.close();
+        output.close();
+        input = null;
+        output = null;
+    }
+    
+    public void closeConnection() throws IOException{
+        closeStreams();
+        socket.close();
     }
     
     public Socket getSocket() {
@@ -67,8 +92,10 @@ public class Connector implements Transmissible, Receivable{
     @Override
     @SuppressWarnings("empty-statement")
     public Object getReceivedObject() throws IOException, ClassNotFoundException {
-        Object objReceived;
-        while((objReceived = input.readObject()) == null);
+        Object objReceived = null;
+        //while((objReceived = input.readObject()) == null);
+        while (objReceived == null) objReceived = input.readObject();
+        
         return objReceived;
     }
     

@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.system.Account;
+import org.martin.cloudCommon.system.SysInfo;
 /**
  *
  * @author martin
@@ -45,7 +46,7 @@ public final class DbManager {
     
     public boolean isValidUser(String nick, String passw) throws SQLException{
         final boolean isValid;
-        try (ResultSet res = connection.select("isValidUser", nick)) {
+        try (ResultSet res = connection.select("isValidUser", nick, passw)) {
             if (res.next()) isValid = res.getBoolean(1);
             else isValid = true;
         }
@@ -139,6 +140,7 @@ public final class DbManager {
 
     public void addUser(String nick, String passw) throws SQLException{
         connection.call("addUser", nick, passw);
+        addAccount(new Account(getUserByNick(nick), SysInfo.TOTAL_SPACE));
     }
     
     public LinkedList<User> getUsers(TYPE_USER typeUser) throws SQLException{
@@ -162,7 +164,7 @@ public final class DbManager {
         }
         res = connection.call(procedureName);
         
-        while (res.next()) 
+        while (res.next())
             users.add(new User(res.getLong(1), res.getString(2), res.getString(3)));
         
         res.close();
@@ -171,7 +173,18 @@ public final class DbManager {
     
     public User getUser(long id) throws SQLException{
         final User user;
-        final ResultSet res = connection.call("getUser", id);
+        try (ResultSet res = connection.call("getUser", id)) {
+            if(res.next())
+                user = new User(res.getLong(1), res.getString(2), res.getString(3));
+            else
+                user = null;
+        }
+        return user;
+    }
+    
+    public User getLastUser() throws SQLException{
+        final User user;
+        final ResultSet res = connection.call("getLastUser");
         
         if(res.next())
             user = new User(res.getLong(1), res.getString(2), res.getString(3));
@@ -196,8 +209,8 @@ public final class DbManager {
     }
     
     public void addAccount(Account account) throws SQLException{
-        connection.call("addAccount", account.getUser(), account.getRootDirName(), account.getUsedSpace(), 
-                account.getTotalSpace(), account.getCreationDate());
+        connection.call("addAccount", account.getUser().getId(), account.getRootDirName(), 
+                account.getUsedSpace(), account.getTotalSpace());
     }
 
     public void addFile(long fileSize, long idAccount) throws SQLException{
@@ -212,9 +225,9 @@ public final class DbManager {
         final Account account;
         final ResultSet res = connection.call("getAccount", id);
     
-        if (res.next()) account = new Account(res.getLong(1), res.getLong(2), getUser(res.getLong(3)), 
-                res.getString(4), res.getLong(5), res.getDate(6));
-            
+        if (res.next()) account = new Account(res.getLong(1), getUser(res.getLong(2)), res.getString(3), 
+                res.getLong(4), res.getLong(5), res.getDate(6));
+        
         else account = null;
         
         res.close();
@@ -223,14 +236,12 @@ public final class DbManager {
 
     public Account getAccountByUser(long idUser) throws SQLException{
         final Account account;
-        final ResultSet res = connection.call("getAccountByUser", idUser);
-    
-        if (res.next()) account = new Account(res.getLong(1), res.getLong(2), getUser(res.getLong(3)), 
-                res.getString(4), res.getLong(5), res.getDate(6));
+        try (ResultSet res = connection.call("getAccountsByUser", idUser)) {
+            if (res.next()) account = new Account(res.getLong(1), getUser(res.getLong(2)), res.getString(3),
+                    res.getLong(4), res.getLong(5), res.getDate(6));
             
-        else account = null;
-        
-        res.close();
+            else return null;
+        }
         return account;
     }
     

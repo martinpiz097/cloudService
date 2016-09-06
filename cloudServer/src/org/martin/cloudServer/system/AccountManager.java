@@ -20,7 +20,7 @@ import org.martin.cloudCommon.model.User;
 import org.martin.cloudCommon.system.Account;
 import org.martin.cloudCommon.system.Archive;
 import org.martin.cloudCommon.system.Folder;
-import org.martin.cloudCommon.system.SysInfo;
+import static org.martin.cloudCommon.system.SysManager.*;
 import org.martin.cloudServer.db.DbManager;
 
 /**
@@ -39,20 +39,20 @@ public class AccountManager implements Serializable{
     private transient FileInputStream reader;
     private transient FileOutputStream writer;
     
-    public AccountManager(User ownerUser, Account account) throws SQLException {
-        this(getRootDirectoryName(ownerUser), account);
+    public AccountManager(Account account) throws SQLException {
+        this(account.getRootDirName(), account);
     }
 
     public AccountManager(String rootDirectoryPath, Account account) throws SQLException {
         this.account = account;
         dbManager = new DbManager();
-        this.rootDirectory = new File(rootDirectoryPath);
+        this.rootDirectory = getRootDir(rootDirectoryPath);
         if (!rootDirectory.exists()) rootDirectory.mkdir();
     }
 
-    public static String getRootDirectoryName(User user){
-        return SysInfo.ROOT_FOLDER_NAME + "/" + 
-                user.getId() + user.getNick() + "/";
+    public static void createRootDirectory(User user){
+        File userDir = getRootDir(user);
+        userDir.mkdir();
     }
     
     public DbManager getDbManager(){
@@ -94,13 +94,13 @@ public class AccountManager implements Serializable{
     /**
      * Crea en la ruta especificada en el objeto Archive un nuevo archivo
      * subido desde el equipo cliente
-     * @param newArchive Objeto con los datos del archivo nuevo, incluyendo su contenido en
+     * @param archive Objeto con los datos del archivo nuevo, incluyendo su contenido en
      * bytes
      * @throws IOException en caso de existir problemas al escribir o leer en un archivo
      */
     
-    public void uploadFile(Archive newArchive) throws IOException, SQLException{
-        uploadFile(newArchive.getParent(), newArchive);
+    public void uploadFile(Archive archive) throws IOException, SQLException{
+        uploadFile(archive.getParent(), archive);
     }
     
     /**
@@ -125,18 +125,10 @@ public class AccountManager implements Serializable{
      */
 
     public void uploadFile(String parentFolder, Archive archive) throws IOException, SQLException{
-        File file = new File(parentFolder);
-        file.createNewFile();
-        writer = new FileOutputStream(file);
-        archive.getQueueBytes().stream().forEach((b) -> {
-            try {
-                writer.write(b, 0, b.length);
-            } catch (IOException ex) {
-                Logger.getLogger(AccountManager.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
-        writer.close();
-        addFile(file.length());
+        archive.create();
+        addFile(archive.length());
+        System.out.println("Archivo subido!");
+        System.out.println("Ruta del nuevo archivo remoto: " + archive.getCanonicalPath());
     }
 
     /**
@@ -146,10 +138,47 @@ public class AccountManager implements Serializable{
      * @param parentFolder carpeta remota en donde se alojará el nuevo archivo
      * @param archive Objeto con los datos del archivo nuevo, incluyendo su contenido en
      * bytes
+     * @throws java.sql.SQLException
      */
     
     public void uplF(String parentFolder, Archive archive) throws IOException, SQLException{
+        System.out.println("Entro al uplF");
         uploadFile(parentFolder, archive);
+    }
+    
+    // Javadoc pendiente
+    
+    public void uploadFile(String remotePath, LinkedList<byte[]> bytes) throws IOException{
+        File f = new File(remotePath);
+        f.createNewFile();
+        writer = new FileOutputStream(f);
+        
+        bytes.stream().forEach(b -> {
+            try {
+                writer.write(b, 0, b.length);
+            } catch (IOException ex) {
+                Logger.getLogger(AccountManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        
+        writer.close();
+    }
+    
+    public void uplF(String remotePath, LinkedList<byte[]> bytes) throws IOException{
+        uploadFile(remotePath, bytes);
+    }
+    
+    public void uploadFile(String remoteFolderPath, String name, LinkedList<byte[]> bytes) throws IOException{
+        final boolean endWithSlash = remoteFolderPath.endsWith("/");
+        if (endWithSlash)
+            uploadFile(remoteFolderPath+name, bytes);
+        
+        else
+            uploadFile(remoteFolderPath+"/"+name, bytes);
+    }
+    
+    public void uplF(String remoteFolderPath, String name, LinkedList<byte[]> bytes) throws IOException{
+        uploadFile(remoteFolderPath, name, bytes);
     }
     
     /**
@@ -164,12 +193,7 @@ public class AccountManager implements Serializable{
     
     public Archive downloadFile(String localPath, String remotePath) throws IOException{
         Archive toDownload = new Archive(localPath);
-        reader = new FileInputStream(new File(remotePath));
-        byte[] buff = new byte[1024];
-        while (reader.read(buff, 0, buff.length) != -1)            
-            toDownload.addByte(buff);
-        
-        reader.close();
+        toDownload.writeBytesFrom(new File(remotePath));
         return toDownload;
     }
     
@@ -210,7 +234,7 @@ public class AccountManager implements Serializable{
             
             // Se hace un bucle hasta que no existan archivos con el nombre
             // solicitado
-            while (getFile(cp + cont) != null)                
+            while (getFile(cp + cont) != null)
                 cont++;
             
             // Se crea el archivo con el nombre generado con el contador
@@ -285,10 +309,12 @@ public class AccountManager implements Serializable{
      */
     public void deleteFile(String path) throws SQLException{
         final File toDelete = getFile(path);
-        if (toDelete != null) {
-            removeFile(toDelete.length());
-            toDelete.delete();
-        }
+        if(!toDelete.exists()) return;
+        
+        // remvoeFile --> llama al procedimiento de la base de datos
+        // para cambiar el espacio actual en uso
+        removeFile(toDelete.length());
+        toDelete.delete();
     }
     
     /**
@@ -307,12 +333,17 @@ public class AccountManager implements Serializable{
      */
     public void deleteFolder(String path) throws IOException{
         final File folder = new File(path);
-        if (folder.exists()) {
-            for (File file : folder.listFiles())
-                if (file.isDirectory()) deleteFolder(file.getCanonicalPath());
-                else file.delete();
-            folder.delete();
-        }
+        if(!folder.exists()) return;
+        
+        if(folder.listFiles() == null) return;
+        
+        if(folder.listFiles().length == 0) return;
+        
+        for (File file : folder.listFiles())
+            if (file.isDirectory()) deleteFolder(file.getCanonicalPath());
+            else file.delete();
+
+        folder.delete();
     }
 
     /**
@@ -430,7 +461,7 @@ public class AccountManager implements Serializable{
                 reader = new FileInputStream(f);
                 buff = new byte[1024];
                 while (reader.read(buff, 0, buff.length) != -1)                    
-                    a.addByte(buff);
+                    a.addBytes(buff);
                 reader.close();
                 result.addArchive(a);
             }
@@ -559,6 +590,7 @@ public class AccountManager implements Serializable{
      * @throws IOException en caso de problemas de acceso a la carpeta
      */
     public File goBack(String currentFolder) throws IOException{
+        System.out.println("goBack;Directorio raiz: "+rootDirectory.getCanonicalPath());
         if (currentFolder.equalsIgnoreCase(rootDirectory.getCanonicalPath()))
             return rootDirectory;
         else
@@ -587,8 +619,39 @@ public class AccountManager implements Serializable{
     public File goToFolder(String path){
         if (path.equalsIgnoreCase(rootDirectory.getParent())) 
             return rootDirectory;
-        else
+        else{
+            System.out.println("goToFolder;Ruta de la carpeta a acceder: "+
+                        new File(path).getParent());
             return new File(path);
+        }
+    
+    }
+    
+    /**
+     * Crea una carpeta en la ruta especificada
+     * @param folderName Nombre de la carpeta a crear
+     * @param path Ruta en donde se alojará la nueva carpeta
+     */
+    public void mkdir(String folderName, String path){
+        try {
+            File f = new File(path, folderName);
+            System.out.println("Path de la nueva carpeta: " + f.getCanonicalPath());
+            if (!f.exists()) {
+                f.mkdir();
+                System.out.println("Se creop la carpeta");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AccountManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Crea una carpeta en la ruta especificada
+     * @param folderName Nombre de la carpeta a crear
+     * @param path Ruta en donde se alojará la nueva carpeta
+     */
+    public void mkd(String folderName, String path){
+        mkdir(folderName, path);
     }
     
     public File getRootDirectory() {

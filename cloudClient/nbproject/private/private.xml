@@ -2,6 +2,14 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group name="red"/>
+        <group name="red">
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/gui/Grapher.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/gui/model/TMFiles.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/model/PBModel.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/gui/GUICloudClient.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/net/Connector.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/gui/model/RenderListDirs.java</file>
+            <file>file:/home/martin/Dropbox/Java/Proyectos/NetBeansProjects/cloudService/cloudClient/src/org/martin/cloudClient/model/LMDirectories.java</file>
+        </group>
     </open-files>
 </project-private>

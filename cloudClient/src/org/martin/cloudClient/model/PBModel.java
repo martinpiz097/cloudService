@@ -17,16 +17,16 @@ public class PBModel implements BoundedRangeModel{
 
     // Los espacios serán mostrados en megas
     //private final JProgressBar progressBar;
-    private final Account info;
+    private final Account acoount;
     private int currentValue;
     private int minimun;
     private int maximun;
     
-    public PBModel(Account info) {
-        this.info = info;
-        this.currentValue = (int) (info.getUsedSpace()/1024/1024);
+    public PBModel(Account account) {
+        this.acoount = account;
+        this.currentValue = (int) (account.getUsedSpace()/1024/1024);
         this.minimun = 0;
-        this.maximun = (int) (info.getTotalSpace()/1024/1024);
+        this.maximun = (int) (account.getTotalSpace()/1024/1024);
     }
     
     @Override
@@ -46,8 +46,8 @@ public class PBModel implements BoundedRangeModel{
 
     @Override
     public void setMaximum(int newMaximum) {
-        info.setTotalSpace(newMaximum*1024*1024);
-        maximun = (int) (info.getTotalSpace()/1024/1024);
+        acoount.setTotalSpace(newMaximum*1024*1024);
+        maximun = (int) (acoount.getTotalSpace()/1024/1024);
     }
 
     @Override
@@ -80,7 +80,6 @@ public class PBModel implements BoundedRangeModel{
 
     @Override
     public void setRangeProperties(int value, int extent, int min, int max, boolean adjusting) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
