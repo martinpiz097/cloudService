@@ -42,6 +42,11 @@ begin
 end//
 
 
+create procedure getUserByNickAndPassw(in _nick varchar(20), in _code varchar(40))
+begin
+	select id, nick, (select AES_DECRYPT(code, (select getAesKey()))) as passw from user where nick = _nick and (select AES_DECRYPT(code, (select getAesKey()))) = _code;
+end//
+
 create procedure addAccount(_idUser bigint, _rootDirName varchar(40), _usedSpace bigint,
 	_totalSpace bigint)
 begin
@@ -57,7 +62,7 @@ end//
 
 create procedure removeFile(in _fileSize bigint, in _idAccount bigint)
 begin
-	update account set usedSpace = usedSpace-_fileSize where id = _idAccount;
+	update account set usedSpace = usedSpace - _fileSize where id = _idAccount;
 end//
 
 

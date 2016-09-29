@@ -6,9 +6,7 @@
 package org.martin.cloudCommon.system;
 
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import org.martin.cloudCommon.model.User;
 
 /**
@@ -62,6 +60,12 @@ public class Account implements Serializable{
         return usedSpace;
     }   
 
+    public long getFreeSpace(){
+        System.out.println("Espacion total: "+getTotalSpace());
+        System.out.println("Espacio usado: "+getUsedSpace());
+        return getTotalSpace()-getUsedSpace();
+    }
+    
     public void setUsedSpace(long usedSpace) {
         this.usedSpace = usedSpace;
     }

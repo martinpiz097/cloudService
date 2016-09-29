@@ -14,3 +14,10 @@
 		correctamente. La subida de archivos puede ser de uno o varios. Se ha comenzado a rediseñar la gui 
 		para mostrar los archivos en una tabla y desde ahi con un click ver opciones, para así tener un mayor
 		orden.
+
+1.0 Server --> - Funciona practicamente todo, aun no se ha comprobado el copiado y pegado porque las funciones no se han añadido al cliente
+	       - Cambiar el puerto a usar en SysInfo a gusto
+
+    Client --> se añadio un webClient para ejecutar las mismas operaciones que en el cliente de escritorio
+		El webClient tiene detalles al bajar archivos ya que algunos nombre no son bien reconocidos
+		Recordar que se debe cambiar la io y el puerto de conexion en los Servlets del WebClient

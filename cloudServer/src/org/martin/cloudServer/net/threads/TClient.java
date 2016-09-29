@@ -14,6 +14,7 @@ import org.martin.cloudCommon.interfaces.Transmissible;
 import org.martin.cloudCommon.model.packages.TransferPackage;
 import org.martin.cloudServer.system.AccountManager;
 import org.martin.cloudCommon.system.Command;
+import org.martin.cloudServer.db.DbManager;
 import org.martin.cloudServer.net.Client;
 import org.martin.cloudServer.system.CommandInterpreter;
 
@@ -24,12 +25,15 @@ import org.martin.cloudServer.system.CommandInterpreter;
 public class TClient extends Thread implements Transmissible, Receivable{
     private final Client client;
     private final CommandInterpreter ci;
+    private final DbManager dbManager;
+    
     private boolean isConnected;
     
-    public TClient(Client client) {
+    public TClient(Client client) throws SQLException {
         this.client = client;
         ci = new CommandInterpreter();
         isConnected = true;
+        dbManager = new DbManager(false);
         start();
     }
 
@@ -53,6 +57,20 @@ public class TClient extends Thread implements Transmissible, Receivable{
     public AccountManager getAccountManager(){
         return client.getAccountManager();
     }
+
+    public DbManager getDbManager() {
+        return dbManager;
+    }
+
+    public void execTransfer(TransferPackage tp){
+        new Thread(() -> {
+            try {
+                new CommandInterpreter().execParallelCommand(tp, this);
+            } catch (IOException | SQLException ex) {
+                Logger.getLogger(TClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+    }
     
     @Override
     public void sendObject(Object obj) throws IOException {
@@ -72,9 +90,6 @@ public class TClient extends Thread implements Transmissible, Receivable{
 
         while (isConnected) {
             try {
-                // Queda pendiente las operaciones con el cloud
-                // ya que deben hacerse por comandos
-
                 System.out.println("Antes del nuevo objeto en TCLIENT");
                 objReceived = null;
                 while (objReceived == null)
@@ -88,11 +103,14 @@ public class TClient extends Thread implements Transmissible, Receivable{
                     if (transPack.getCommand().isValid()) {
                         System.out.println("El comando es valido");
                         ci.execSpecialCommand(transPack, this);
+                        //execTransfer(transPack);
                     }
+                    transPack = null;
                 }
                 else if (objReceived instanceof Command) {
                     cmd = (Command) objReceived;
                     if (cmd.isValid()) ci.execCommand(cmd, this);
+                    cmd = null;
                 }
                 
                 Thread.sleep(300);
@@ -103,3 +121,4 @@ public class TClient extends Thread implements Transmissible, Receivable{
         System.out.println("Hilo cliente "+client.getUser().getNick()+" finalizado");
     }
 }
+

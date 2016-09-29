@@ -1,0 +1,3 @@
+#file that content the current public ip
+#Sun Sep 11 21:58:29 CLST 2016
+publicHost=200.30.217.227

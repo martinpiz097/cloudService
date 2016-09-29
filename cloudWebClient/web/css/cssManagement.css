@@ -1,0 +1,161 @@
+
+body{
+  margin-left: 3%;
+  margin-right: 3%;
+  font-family: fantasy;
+  background-image: url('../images/bg4.jpg');
+  background-position: center;
+}
+
+.title{
+  text-align: center;
+  font-size: 36px;
+  font-family: sans-serif;
+  font-style: oblique;
+  margin-left: 20%;
+  margin-right: 20%;
+  margin-top: 0px;
+  width: 60%;
+}
+
+.tit{
+  float: left;
+  margin-top: 0px;
+}
+
+.menu{
+  float: left;
+  margin-top: 0px;
+  height: 30px;
+  width: 100%;
+  background-color: black;
+  border: 2px;
+  border-style: solid;
+  border-color: #CACACA;
+}
+
+
+.menuOP{
+  float: left;
+  border: 3px;
+  border-radius: 3px;
+  background-color: white;
+  width: 15%;
+  height: 100%;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.btnMenu{
+  float: left;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-family: menu;
+}
+
+.panelInfo{
+  float: left;
+  font-size: 18px;
+  height: 15%;;
+  width: 100%;
+  border: 4px;
+  border-style: double;
+  border-color: black;
+  font-family: sans-serif;
+  background-color: #39ED63;
+}
+
+.buttons{
+  width: 40%;
+  height: 100%;
+  float: left;
+}
+
+.infoFolder{
+  width: 20%;
+  float: left;
+}
+
+#lblCurrentFolder{
+}
+
+.info{
+  float: left;
+  width: 35%
+}
+
+.linkButton{
+  float: left;
+  width: 10%;
+}
+
+.imgBtn{
+}
+
+.buttonPanel{
+  width: 10%;
+  float: left;
+  width: 100%;
+}
+
+.lblInfo{
+  float: left;
+}
+
+.panelManager{
+  float: left;
+  height: 100%;
+  font-size: 14px;
+  font-family: menu;
+  width: 100%;
+  border: 4px;
+  border-style: double;
+  border-color: green;
+  background: #7FF49A;
+}
+
+.dirs{
+  float: left;
+  width: 17%;
+  height: 100%;
+  border: 3px;
+  border-radius: 5px;
+  border-color: #B4EBC1;
+}
+
+#titFolders{
+  text-align: center;
+  font-size: 20px;
+  font-family: cursive;
+  margin-left: 30%;
+  margin-right: 20%;
+  width: 60%;
+}
+
+.folder{
+  float: left;
+}
+
+.btnFolder{
+    text-align: left;
+    float: left;
+    width: 100%;
+    height: 100%;
+    font-size: 18px;
+    font-family: menu;
+}
+
+.files{
+  float: left;
+  width: 80%;
+  height: 100%;
+  background: white;
+}
+
+#tblFiles{
+  float: left;
+  font-size: 14px;
+  height: 100%;
+  width: 100%;
+}

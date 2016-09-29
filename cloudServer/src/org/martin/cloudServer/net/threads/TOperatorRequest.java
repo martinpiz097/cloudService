@@ -23,10 +23,10 @@ import org.martin.cloudServer.system.CommandInterpreter;
  */
 public class TOperatorRequest extends Thread implements Transmissible, Receivable {
 
-    private final Socket sockRequest;
-    private final ObjectInputStream input;
-    private final ObjectOutputStream output;
-    private final CommandInterpreter ci;
+    private Socket sockRequest;
+    private ObjectInputStream input;
+    private ObjectOutputStream output;
+    private CommandInterpreter ci;
     
     public TOperatorRequest(Socket sockRequest) throws IOException {
         this.sockRequest = sockRequest;
@@ -49,14 +49,16 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
     }
 
     public void closeConnection() throws IOException {
-        output.close();
-        input.close();
+        closeStreams();
         sockRequest.close();
+        sockRequest = null;
     }
 
     public void closeStreams() throws IOException{
         output.close();
         input.close();
+        output = null;
+        input = null;
     }
     
     @Override
@@ -73,16 +75,33 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
     @Override
     public void run() {
         Object objReceived = null;
-
+        long currentTime = System.currentTimeMillis();
+        
         try {
-            while (objReceived == null)
+            while (objReceived == null){
+                if ((System.currentTimeMillis()-currentTime)/1000 >= 10)
+                    break;
                 objReceived = getReceivedObject();
-            
-            System.out.println("Antes del if");
-            if (objReceived instanceof Command){
-                ci.execCommand((Command)objReceived, this);
-                System.out.println("Respuesta enviada");
             }
+            
+            if (objReceived == null) {
+                System.out.println("No llegó ningun objeto");
+                closeConnection();
+            }
+            
+            else {
+                System.out.println("Antes del if");
+                if (objReceived instanceof Command){
+                    ci.execCommand((Command)objReceived, this);
+                    System.out.println("Respuesta enviada");
+                }
+                objReceived = null;
+                output = null;
+                input = null;
+            }
+            
+            currentTime = 0;
+            ci = null;
             System.out.println("Al final del tor");
         } catch (ClassNotFoundException | SQLException ex) {
             System.out.println("Exception en el tor");
@@ -92,7 +111,6 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
                 closeConnection();
                 //Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex1) {
-                Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex1);
             }
         }
 

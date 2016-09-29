@@ -12,6 +12,7 @@ import java.net.Socket;
 import org.martin.cloudCommon.interfaces.Receivable;
 import org.martin.cloudCommon.interfaces.Transmissible;
 import org.martin.cloudCommon.model.packages.TransferPackage;
+import org.martin.cloudCommon.model.packages.UpdatePackage;
 import org.martin.cloudCommon.system.Command;
 
 /**
@@ -22,6 +23,10 @@ public class Connector implements Transmissible, Receivable{
     private final Socket socket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
+    
+    public Connector(String host, int port) throws IOException{
+        this(new Socket(host, port));
+    }
     
     public Connector(Socket socket) throws IOException {
         this.socket = socket;
@@ -66,6 +71,15 @@ public class Connector implements Transmissible, Receivable{
         return input;
     }
 
+    public void sendUpdateRequest(String currentDirPath, String nickUser) throws IOException{
+        final Command cmdUpdate = new Command(Command.update.getOrder(), currentDirPath, nickUser);
+        sendCommand(cmdUpdate);
+    }
+    
+    public void sendCommand(String... strCommand) throws IOException{
+        sendCommand(new Command(strCommand));
+    }
+    
     public void sendCommand(Command cmd) throws IOException{
         sendObject(cmd);
     }
@@ -97,6 +111,15 @@ public class Connector implements Transmissible, Receivable{
         while (objReceived == null) objReceived = input.readObject();
         
         return objReceived;
+    }
+    
+    public UpdatePackage getUpdatesReceived() throws IOException, ClassNotFoundException{
+        final Object objReceived = getReceivedObject();
+        
+        if (objReceived instanceof UpdatePackage)
+            return (UpdatePackage) objReceived;
+        else
+            return null;
     }
     
 //    private final User user;

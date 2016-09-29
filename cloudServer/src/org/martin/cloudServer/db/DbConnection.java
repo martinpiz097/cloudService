@@ -9,7 +9,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import org.martin.cloudCommon.interfaces.QueryExecutable;
 
 /**
@@ -17,9 +16,7 @@ import org.martin.cloudCommon.interfaces.QueryExecutable;
  * @author martin
  */
 public class DbConnection implements QueryExecutable{
-    
     private final Connection con;
-    private Statement sen;
     private final MysqlDataSource mysqlDs;
     private String strQuery;
     //private StringBuffer strBuff;
@@ -33,6 +30,10 @@ public class DbConnection implements QueryExecutable{
         con = mysqlDs.getConnection();
     }
 
+    public void close() throws SQLException{
+        con.close();
+    }
+    
     public int getTableCount(String table) throws SQLException{
         final int count;
         ResultSet res = execSelect("select count(id) from " + table);
@@ -69,6 +70,7 @@ public class DbConnection implements QueryExecutable{
             else
                 strQuery+=("'"+fields[i]+"')");
         con.createStatement().execute(strQuery);
+        strQuery = null;
     }
 
     @Override
@@ -99,7 +101,7 @@ public class DbConnection implements QueryExecutable{
                 strQuery+=sets[i];
         
         if (where != null) strQuery+=(" where " + where);
-        
+        strQuery = null;
         con.createStatement().execute(strQuery);
     }
 

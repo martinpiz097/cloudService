@@ -1,0 +1,72 @@
+body{
+  background-image: url('../images/bgInfo.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.title{
+  font-family: cursive;
+  color: white;
+  background-color: black;
+  width: 100%;
+  height: 45px;
+  text-align: center;
+  padding-top: 5px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+h1{
+  margin-top: 0px;
+}
+
+.infoUser{
+  background-color: #CACACA;
+  color: #0A2DAD;
+  float: left;
+  margin-left: 30%;
+  margin-right: 30%;
+  margin-top: 5%;
+  width: 40%;
+  height: 30%;
+  border-radius: 8px;
+}
+
+label{
+  font-family: cursive;
+  font-size: 24px;
+}
+
+.subTitles{
+  width: 50%;
+  height: 100%;
+  float: left;
+}
+
+.datos{
+  width: 50%;
+  height: 100%;
+  float: left;
+}
+
+.subTitle{
+  width: 100%;
+  height: 25%;
+}
+
+.dato{
+  width: 100%;
+  height: 25%;
+}
+
+.goBack{
+  width: 30%;
+  height: 30%;
+  font-size: 28px;
+  font-family: cursive;
+  color: #66E128;
+  margin-left: 35%;
+  margin-right: 35%;
+  margin-top: 20%;
+  text-align: center;
+}

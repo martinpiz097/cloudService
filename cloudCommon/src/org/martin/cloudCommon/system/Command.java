@@ -115,7 +115,7 @@ public class Command implements Serializable{
     
     
     // @close --> cierra la conexion
-    /**
+        /**
      * @close --> cierra la conexion
      */
     
@@ -127,6 +127,25 @@ public class Command implements Serializable{
      */
     public static final Command mkd = Command.newInstance("@mkd");
     
+    // @update rutaCompletaCurDir nickUser
+    /**
+     * @update rutaCompletaCurDir nickUser
+     */
+    public static final Command update = Command.newInstance("@update");
+
+    // @rename rutaCompleta nuevoNombre
+    /**
+     * @rename rutaCompleta nuevoNombre
+     */
+    
+    public static final Command rename = Command.newInstance("@rename");
+    
+    // @start -p puerto || @start -p puerto -t tiempoEnSegundos
+    /**
+     * @start -p puerto || @start -p puerto -t tiempoEnSegundos
+     */
+    public static final Command start = Command.newInstance("@start");
+    
     public static Command newInstance(String strCommand){
         return new Command(strCommand);
     }
@@ -135,16 +154,17 @@ public class Command implements Serializable{
     
     public Command(String strCommand) {
         //LinkedBlockingQueue<String> queue;
-        final String[] split = strCommand.split(" ");
-        order = split[0];
-        options = new String[split.length-1];
-        for (int i = 1; i < split.length; i++)
-            options[i-1] = split[i];
+//        final String[] split = strCommand.split(" ");
+//        order = split[0];
+//        options = new String[split.length-1];
+//        for (int i = 1; i < split.length; i++)
+//            options[i-1] = split[i];
+        this(strCommand.split(" "));
     }
 
     public Command(String... strCommand){
         final int len = strCommand.length;
-        System.out.println("Cantidad de opciones del comando: " + (len-1));
+        //System.out.println("Cantidad de opciones del comando: " + (len-1));
         order = strCommand[0];
         if (len == 1) options = null;
         
@@ -197,12 +217,41 @@ public class Command implements Serializable{
         if(order == null) return false;
         if(!order.startsWith("@")) return false;
 
-        return order.equals("@access") || order.equals("@back") || order.equals("@cpD") ||
+        boolean isValid = 
+                order.equals("@access") || order.equals("@back") || order.equals("@cpD") ||
                 order.equals("@cpF") || order.equals("@ctD") || order.equals("@ctF") ||
                 order.equals("@delD") || order.equals("@delF") || order.equals("@dwnD") ||
                 order.equals("@dwnF") || order.equals("@list") || order.equals("@loginU") ||
                 order.equals("@regU") || order.equals("@root") || order.equals("@uplD") ||
-                order.equals("@uplF") || order.equals("@close") || order.equals("@mkd");
+                order.equals("@uplF") || order.equals("@close") || order.equals("@mkd") ||
+                order.equals("@update") || order.equals("@rename") || order.equals("@start");
+
+        if(!isValid || !order.equals("@start")) return isValid;
+        
+        // Ahora se supone que el comando es start
+        if(!hasOptions()) return false;
+        if(getOptionsCount() != 2 && getOptionsCount() != 4) return false;
+        
+        // Ahora suponiendo que tengo la cantidad de opciones adecuada
+        // pero se debe comprobar si estan bien escritas y las opciones
+        // escritas son las correctas
+        
+        if(!getOptionAt(0).equals("-p")) return false;
+        
+        try {
+            if (!getOptionAt(1).equals("default"))
+                Integer.parseInt(getOptionAt(1));
+            
+            if(getOptionsCount() == 4){
+                Integer.parseInt(getOptionAt(3));
+                return getOptionAt(2).equals("-t");
+            }
+            else
+                return true;
+            
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     public boolean isEqualsOrder(Command otherCommand){
@@ -224,7 +273,7 @@ public class Command implements Serializable{
     }
 
     public String getFirstOption(){
-        System.out.println((options != null) ? options.length : "Es nulo");
+        //System.out.println((options != null) ? options.length : "Es nulo");
         return (hasOptions()) ? options[0] : null;
     }
     

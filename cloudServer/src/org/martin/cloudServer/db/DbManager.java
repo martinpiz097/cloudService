@@ -1,7 +1,7 @@
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * and openConnection the template in the editor.
  */
 package org.martin.cloudServer.db;
 
@@ -18,16 +18,34 @@ import org.martin.cloudCommon.system.SysInfo;
  */
 public final class DbManager {
     
-    private final DbConnection connection;
+    private DbConnection connection;
 
     public enum TYPE_USER{
         ENABLED, DISABLED, ALL;
     }
     
     public DbManager() throws SQLException {
-        connection = new DbConnection("localhost", "dbCloud", "root", "admin");
+        openConnection();
+    }
+    
+    public DbManager(boolean open) throws SQLException{
+        if (open) openConnection();
+        else connection = null;
     }
 
+    public boolean isOpenConnection(){
+        return connection != null;
+    }
+    
+    public void openConnection() throws SQLException{
+        connection = new DbConnection("localhost", "dbCloud", "root", "admin");
+    }
+    
+    public void closeConnection() throws SQLException{
+        connection.close();
+        connection = null;
+    }
+    
 //    public boolean isNickAvailable(User newUser) throws SQLException{
 //        final int cantResults = connection.getTableCount("user", "nick='"+newUser.getNick()+"' "
 //                + "and code = '"+newUser.getPassword()+"'");
@@ -35,12 +53,25 @@ public final class DbManager {
 //        return cantResults == 0;
 //    }
 
+    public void cancelVariable(Object... objs){
+        for (Object obj : objs)
+            if (obj instanceof Number)
+                obj = 0;
+            else if (!(obj instanceof Boolean))
+                obj = null;
+            
+    }
+    
     public boolean isNickAvailable(String nick) throws SQLException {
         final boolean isValid;
         try (ResultSet res = connection.select("isNickAvailable", nick)) {
             if (res.next()) isValid = res.getBoolean(1);
             else isValid = true;
+
+            res.close();
+            cancelVariable(res);
         }
+
         return isValid;
     }
     
@@ -49,73 +80,82 @@ public final class DbManager {
         try (ResultSet res = connection.select("isValidUser", nick, passw)) {
             if (res.next()) isValid = res.getBoolean(1);
             else isValid = true;
+            
+            res.close();
+            cancelVariable(res);
         }
         return isValid;
     }
 
     public long getUsersCount() throws SQLException{
         final long count;
-        final ResultSet res = connection.select("getUsersCount");
-        
-        if(res.next()) count = res.getLong(1);
-        else count = 0;
-        
-        res.close();
+        try (ResultSet res = connection.select("getUsersCount")) {
+            if(res.next()) count = res.getLong(1);
+            else count = 0;
+            
+            res.close();
+            cancelVariable(res);
+        }
         return count;
     }
     
     public long getAccountsCount() throws SQLException{
         final long count;
-        final ResultSet res = connection.select("getAccountsCount");
+        try (ResultSet res = connection.select("getAccountsCount")) {
+            if(res.next()) count = res.getLong(1);
+            else count = 0;
         
-        if(res.next()) count = res.getLong(1);
-        else count = 0;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return count;
     }
     
     public long getUsedSpace(long idAccount) throws SQLException{
         long usedSpace;
-        final ResultSet res = connection.select("getUsedSpace", idAccount);
+        try (ResultSet res = connection.select("getUsedSpace", idAccount)) {
+            if(res.next()) usedSpace = res.getLong(1);
+            else usedSpace = 0;
         
-        if(res.next()) usedSpace = res.getLong(1);
-        else usedSpace = 0;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return usedSpace;
     }
     
     public long getTotalSpace(long idAccount) throws SQLException{
         long totalSpace;
-        final ResultSet res = connection.select("getTotalSpace", idAccount);
+        try (ResultSet res = connection.select("getTotalSpace", idAccount)) {
+            if(res.next()) totalSpace = res.getLong(1);
+            else totalSpace = 0;
         
-        if(res.next()) totalSpace = res.getLong(1);
-        else totalSpace = 0;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return totalSpace;
     }
     
     public long getFreeSpace(long idAccount) throws SQLException{
         long freeSpace;
-        final ResultSet res = connection.select("getFreeSpace", idAccount);
+        try (ResultSet res = connection.select("getFreeSpace", idAccount)) {
+            if(res.next()) freeSpace = res.getLong(1);
+            else freeSpace = 0;
         
-        if(res.next()) freeSpace = res.getLong(1);
-        else freeSpace = 0;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return freeSpace;
     }
     
     public boolean hasAvailableSpace(long fileSize, long idAccount) throws SQLException{
         final boolean hasAvailableSpace;
-        final ResultSet res = connection.select("hasAvailableSpace", fileSize, idAccount);
+        try (ResultSet res = connection.select("hasAvailableSpace", fileSize, idAccount)) {
+            if(res.next()) hasAvailableSpace = res.getBoolean(1);
+            else hasAvailableSpace = false;
         
-        if(res.next()) hasAvailableSpace = res.getBoolean(1);
-        else hasAvailableSpace = false;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return hasAvailableSpace;
     }
     
@@ -125,12 +165,13 @@ public final class DbManager {
     
     public long getAccountsCountByUser(long idUser) throws SQLException{
         final long count;
-        final ResultSet res = connection.select("getAccountsCountByUser", idUser);
-        
-        if(res.next()) count = res.getLong(1);
-        else count = 0;
-        
-        res.next();
+        try(ResultSet res = connection.select("getAccountsCountByUser", idUser)){
+            if(res.next()) count = res.getLong(1);
+            else count = 0;
+            
+            res.close();
+            cancelVariable(res);
+        }
         return count;
     }
     
@@ -145,8 +186,8 @@ public final class DbManager {
     
     public LinkedList<User> getUsers(TYPE_USER typeUser) throws SQLException{
         final LinkedList<User> users = new LinkedList<>();
-        final ResultSet res;
-        final String procedureName;
+        ResultSet res;
+        String procedureName;
         
         switch(typeUser){
             case ENABLED:
@@ -168,6 +209,7 @@ public final class DbManager {
             users.add(new User(res.getLong(1), res.getString(2), res.getString(3)));
         
         res.close();
+        cancelVariable(res, procedureName);
         return users;
     }
     
@@ -178,33 +220,52 @@ public final class DbManager {
                 user = new User(res.getLong(1), res.getString(2), res.getString(3));
             else
                 user = null;
+            
+            res.close();
+            cancelVariable(res);
         }
         return user;
     }
     
     public User getLastUser() throws SQLException{
         final User user;
-        final ResultSet res = connection.call("getLastUser");
+        try (ResultSet res = connection.call("getLastUser")) {
+            if(res.next())
+                user = new User(res.getLong(1), res.getString(2), res.getString(3));
+            else
+                user = null;
         
-        if(res.next())
-            user = new User(res.getLong(1), res.getString(2), res.getString(3));
-        else
-            user = null;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return user;
     }
     
     public User getUserByNick(String nick) throws SQLException{
         final User user;
-        final ResultSet res = connection.call("getUserByNick", nick);
+        try (ResultSet res = connection.call("getUserByNick", nick)) {
+            if(res.next())
+                user = new User(res.getLong(1), res.getString(2), res.getString(3));
+            else
+                user = null;
         
-        if(res.next())
-            user = new User(res.getLong(1), res.getString(2), res.getString(3));
-        else
-            user = null;
+            res.close();
+            cancelVariable(res);
+        }
+        return user;
+    }
+
+    public User getUserByNickAndPassw(String nick, String passw) throws SQLException{
+        final User user;
+        try (ResultSet res = connection.call("getUserByNickAndPassw", nick, passw)) {
+            if(res.next())
+                user = new User(res.getLong(1), res.getString(2), res.getString(3));
+            else
+                user = new User();
         
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return user;
     }
     
@@ -223,14 +284,15 @@ public final class DbManager {
     
     public Account getAccount(long id) throws SQLException{
         final Account account;
-        final ResultSet res = connection.call("getAccount", id);
-    
-        if (res.next()) account = new Account(res.getLong(1), getUser(res.getLong(2)), res.getString(3), 
-                res.getLong(4), res.getLong(5), res.getDate(6));
+        try (ResultSet res = connection.call("getAccount", id)) {
+            if (res.next()) account = new Account(res.getLong(1), getUser(res.getLong(2)), res.getString(3),
+                    res.getLong(4), res.getLong(5), res.getTimestamp(6));
+            
+            else account = null;
         
-        else account = null;
-        
-        res.close();
+            res.close();
+            cancelVariable(res);
+        }
         return account;
     }
 
@@ -238,13 +300,16 @@ public final class DbManager {
         final Account account;
         try (ResultSet res = connection.call("getAccountsByUser", idUser)) {
             if (res.next()) account = new Account(res.getLong(1), getUser(res.getLong(2)), res.getString(3),
-                    res.getLong(4), res.getLong(5), res.getDate(6));
+                    res.getLong(4), res.getLong(5), res.getTimestamp(6));
             
-            else return null;
+            else account = null;
+            
+            res.close();
+            cancelVariable(res);
         }
         return account;
     }
-    
+
     public void removeAccount(long id) throws SQLException{
         connection.call("removeAccount", id);
         
@@ -276,5 +341,4 @@ public final class DbManager {
 //        users.forEach(System.out::println);
 //    }
     
-
 }
