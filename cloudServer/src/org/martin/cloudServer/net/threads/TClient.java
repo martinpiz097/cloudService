@@ -23,26 +23,45 @@ import org.martin.cloudServer.system.CommandInterpreter;
  * @author martin
  */
 public class TClient extends Thread implements Transmissible, Receivable{
-    private final Client client;
-    private final CommandInterpreter ci;
-    private final DbManager dbManager;
+    private Client client;
+    private CommandInterpreter ci;
+    private DbManager dbManager;
     
     private boolean isConnected;
+    //private static final StringBuilder sBuilder = new StringBuilder();
     
     public TClient(Client client) throws SQLException {
         this.client = client;
         ci = new CommandInterpreter();
         isConnected = true;
         dbManager = new DbManager(false);
+        setThreadName();
         start();
     }
+    
+    private void cancelAll(){
+        client = null;
+        ci = null;
+        dbManager = null;
+    }
 
+    private void setThreadName(){
+        StringBuilder sBuilder = new StringBuilder();
+        sBuilder.append(client.getUser().getNick());
+        sBuilder.append("Thread");
+        setName(sBuilder.toString());
+        sBuilder.delete(0, sBuilder.length());
+        sBuilder = null;
+    }
+    
     public void closeStreams() throws IOException{
         client.closeStreams();
     }
     
-    public void closeConnection() throws IOException{
+    public void closeConnection() throws IOException, SQLException{
         client.closeConnection();
+        dbManager.closeConnection();
+        cancelAll();
         isConnected = false;
     }
     

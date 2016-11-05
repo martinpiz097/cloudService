@@ -20,11 +20,11 @@ import org.martin.cloudServer.system.AccountManager;
  */
 public class Client {
     private final long idUser;
-    private final User user;
-    private final AccountManager accountManager;
-    private final Socket socket;
-    private final ObjectOutputStream output;
-    private final ObjectInputStream input;
+    private User user;
+    private AccountManager accountManager;
+    private Socket socket;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
 
     public Client(User user, Socket socket, Account account) throws IOException, SQLException {
         this.idUser = user.getId();
@@ -46,14 +46,27 @@ public class Client {
         this.input = input;
     }
     
+    private void cancelAll(){
+        user = null;
+        accountManager = null;
+    }
+    
+    public void closeSocket() throws IOException{
+        socket.close();
+        socket = null;
+    }
+    
     public void closeStreams() throws IOException{
         input.close();
+        input = null;
         output.close();
+        output = null;
     }
     
     public void closeConnection() throws IOException{
         closeStreams();
-        socket.close();
+        closeSocket();
+        cancelAll();
     }
     
     public long getIdUser() {

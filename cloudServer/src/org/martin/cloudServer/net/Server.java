@@ -7,17 +7,11 @@ package org.martin.cloudServer.net;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.net.SocketAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,15 +21,15 @@ import org.martin.cloudServer.db.DbManager;
 import org.martin.cloudServer.net.threads.TClient;
 import org.martin.cloudServer.net.threads.TOperatorRequest;
 import org.martin.cloudServer.system.AccountManager;
+import org.martin.electroList.structure.ElectroList;
 
 /**
  *
  * @author martin
  */
 public class Server extends Thread{
-    
     private final ServerSocket serverSock;
-    private final LinkedList<TClient> tClientsRunning;
+    private final ElectroList<TClient> tClientsRunning;
     //private int tClientsCount;
     //private final DbManager dbManager;
     private final File rootDirectory;
@@ -53,13 +47,13 @@ public class Server extends Thread{
         return server;
     }
     
-    public Server() throws IOException, SQLException {
+    private Server() throws IOException, SQLException {
         this(SysInfo.DEFAULT_PORT);
     }
     
-    public Server(int port) throws IOException, SQLException{
+    private Server(int port) throws IOException, SQLException{
         serverSock = new ServerSocket(port);
-        tClientsRunning = new LinkedList<>();
+        tClientsRunning = new ElectroList<>();
         rootDirectory = new File(SysInfo.ROOT_FOLDER_NAME);
         if(!rootDirectory.exists()) rootDirectory.mkdir();
         //dbManager = new DbManager();
@@ -81,6 +75,10 @@ public class Server extends Thread{
 //        return dbManager.isValidUser(user, passw);
 //    }
 
+    private void runOperadorRequest(Socket sockRequest) throws IOException{
+        new Thread(new TOperatorRequest(sockRequest)).start();
+    }
+    
     public synchronized boolean isClientConnected(long userId){
         return tClientsRunning.stream()
                 .anyMatch(tc -> tc.getClient().getIdUser() == userId);
@@ -164,7 +162,7 @@ public class Server extends Thread{
         while (true) {
             try {
                 System.out.println("Antes del nuevo cliente");
-                new TOperatorRequest(serverSock.accept()).start();
+                runOperadorRequest(serverSock.accept());
                 System.out.println("Un cliente llegó!");
                 Thread.sleep(300);
             } catch (InterruptedException | IOException ex) {

@@ -8,10 +8,8 @@ package org.martin.cloudCommon.system;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.martin.cloudCommon.interfaces.BinSerializable;
+import org.martin.electroList.structure.ElectroList;
 
 /**
  *
@@ -19,43 +17,43 @@ import org.martin.cloudCommon.interfaces.BinSerializable;
  */
 public final class Folder extends File implements BinSerializable{
     
-    private final LinkedList<Archive> archives;
-    private final LinkedList<Folder> folders;
+    private final ElectroList<Archive> archives;
+    private final ElectroList<Folder> folders;
     
-    public Folder(LinkedList<Archive> archives, String pathname) {
+    public Folder(ElectroList<Archive> archives, String pathname) {
         super(pathname);
         this.archives = archives;
-        this.folders = new LinkedList<>();
+        this.folders = new ElectroList<>();
     }
 
-    public Folder(LinkedList<Archive> archives, String parent, String child) {
+    public Folder(ElectroList<Archive> archives, String parent, String child) {
         super(parent, child);
         this.archives = archives;
-        this.folders = new LinkedList<>();
+        this.folders = new ElectroList<>();
     }
 
-    public Folder(LinkedList<Archive> archives, File parent, String child) {
+    public Folder(ElectroList<Archive> archives, File parent, String child) {
         super(parent, child);
         this.archives = archives;
-        this.folders = new LinkedList<>();
+        this.folders = new ElectroList<>();
     }
 
-    public Folder(LinkedList<Archive> archives, URI uri) {
+    public Folder(ElectroList<Archive> archives, URI uri) {
         super(uri);
         this.archives = archives;
-        this.folders = new LinkedList<>();
+        this.folders = new ElectroList<>();
     }
 
     public Folder(String pathname) {
         super(pathname);
-        this.archives = new LinkedList<>();
-        this.folders = new LinkedList<>();
+        this.archives = new ElectroList<>();
+        this.folders = new ElectroList<>();
     }
 
     public Folder(String parent, String child) {
         super(parent, child);
-        this.archives = new LinkedList<>();
-        this.folders = new LinkedList<>();
+        this.archives = new ElectroList<>();
+        this.folders = new ElectroList<>();
     }
     
     public Folder(String parent, String child, boolean create) throws IOException{
@@ -65,14 +63,14 @@ public final class Folder extends File implements BinSerializable{
 
     public Folder(File parent, String child) {
         super(parent, child);
-        this.archives = new LinkedList<>();
-        this.folders = new LinkedList<>();
+        this.archives = new ElectroList<>();
+        this.folders = new ElectroList<>();
     }
 
     public Folder(URI uri) {
         super(uri);
-        this.archives = new LinkedList<>();
-        this.folders = new LinkedList<>();
+        this.archives = new ElectroList<>();
+        this.folders = new ElectroList<>();
     }
 
     public boolean hasFolders(){
@@ -186,11 +184,11 @@ public final class Folder extends File implements BinSerializable{
         return archives.size() + folders.size();
     }
     
-    public LinkedList<Archive> getArchives() {
+    public ElectroList<Archive> getArchives() {
         return archives;
     }
 
-    public LinkedList<Folder> getFolders() {
+    public ElectroList<Folder> getFolders() {
         return folders;
     }
     

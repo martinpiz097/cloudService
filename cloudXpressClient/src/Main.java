@@ -25,7 +25,6 @@ public class Main {
      * @throws java.lang.ClassNotFoundException
      */
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        
         Socket cliente;
         ObjectOutputStream oos;
         ObjectInputStream ois;

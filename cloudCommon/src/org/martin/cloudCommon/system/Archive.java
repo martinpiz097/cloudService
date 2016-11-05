@@ -11,8 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.LinkedList;
 import org.martin.cloudCommon.interfaces.BinSerializable;
+import org.martin.electroList.structure.ElectroList;
 
 /**
  *
@@ -20,28 +20,28 @@ import org.martin.cloudCommon.interfaces.BinSerializable;
  */
 public final class Archive extends File implements BinSerializable{
     
-    private final LinkedList<byte[]> queueBytes;
+    private final ElectroList<byte[]> queueBytes;
     private transient FileInputStream reader;
     private transient FileOutputStream writer;
     
     public Archive(String pathname) {
         super(pathname);
-        this.queueBytes = new LinkedList<>();
+        this.queueBytes = new ElectroList<>();
     }
 
     public Archive(String parent, String child) {
         super(parent, child);
-        this.queueBytes = new LinkedList<>();
+        this.queueBytes = new ElectroList<>();
     }
 
     public Archive(File parent, String child) {
         super(parent, child);
-        this.queueBytes = new LinkedList<>();
+        this.queueBytes = new ElectroList<>();
     }
 
     public Archive(URI uri) {
         super(uri);
-        this.queueBytes = new LinkedList<>();
+        this.queueBytes = new ElectroList<>();
     }
     
     public void create() throws IOException{
@@ -157,7 +157,7 @@ public final class Archive extends File implements BinSerializable{
         queueBytes.add(b);
     }
     
-    public LinkedList<byte[]> getQueueBytes() {
+    public ElectroList<byte[]> getQueueBytes() {
         return queueBytes;
     }
     

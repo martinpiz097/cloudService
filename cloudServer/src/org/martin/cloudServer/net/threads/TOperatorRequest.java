@@ -21,8 +21,7 @@ import org.martin.cloudServer.system.CommandInterpreter;
  *
  * @author martin
  */
-public class TOperatorRequest extends Thread implements Transmissible, Receivable {
-
+public class TOperatorRequest implements Runnable, Transmissible, Receivable {
     private Socket sockRequest;
     private ObjectInputStream input;
     private ObjectOutputStream output;
@@ -104,7 +103,6 @@ public class TOperatorRequest extends Thread implements Transmissible, Receivabl
             ci = null;
             System.out.println("Al final del tor");
         } catch (ClassNotFoundException | SQLException ex) {
-            System.out.println("Exception en el tor");
             Logger.getLogger(TOperatorRequest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             try {

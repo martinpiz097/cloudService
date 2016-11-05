@@ -14,8 +14,10 @@ import java.util.LinkedList;
  */
 public class Command implements Serializable{
     
-    private final String order;
+    private String order;
     private String[] options;
+    
+    private static final StringBuilder sBuilder = new StringBuilder();
     
     // @uplF rutaLocal rutaRemota --> subir archivo
     /**
@@ -173,6 +175,19 @@ public class Command implements Serializable{
             for (int i = 1; i < len; i++)
                 options[i-1] = strCommand[i];
         }
+    }
+    
+    private static void clearStringBuilder(){
+        sBuilder.delete(0, sBuilder.length());
+    }
+    
+    private static void appendToBuilder(String str){
+        sBuilder.append(str);
+    }
+    
+    private static void appendToBuilder(String... strs){
+        for (String str : strs)
+            sBuilder.append(str);
     }
 
     public boolean hasOptions(){
@@ -332,18 +347,34 @@ public class Command implements Serializable{
         return (options.length > index && index >= 0) ? options[index] : null;
     }
 
-    public static Command newRegU(String... options){
-        String strCommand = "@regU ";
-        for (String option : options) 
-            strCommand += (option + " ");
-        return new Command(strCommand);
+    public synchronized static Command newRegU(String... options){
+         String strCommand = "@regU ";
+
+        appendToBuilder(strCommand);
+        for (String option : options){
+            appendToBuilder(option, " ");
+            option = null;
+        }
+        
+        String cmd = sBuilder.toString();
+        clearStringBuilder();
+        strCommand = null;
+        return new Command(cmd);
     }
     
-    public static Command newLoginU(String... options){
+    public synchronized static Command newLoginU(String... options){
         String strCommand = "@loginU ";
-        for (String option : options) 
-            strCommand += (option + " ");
-        return new Command(strCommand);
+
+        appendToBuilder(strCommand);
+        for (String option : options){
+            appendToBuilder(option, " ");
+            option = null;
+        }
+        
+        String cmd = sBuilder.toString();
+        clearStringBuilder();
+        strCommand = null;
+        return new Command(cmd);
     }
 
     @Override

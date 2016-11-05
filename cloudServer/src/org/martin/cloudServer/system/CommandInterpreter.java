@@ -90,6 +90,7 @@ public class CommandInterpreter {
 
         else if (cmd.isEqualsOrder(Command.close)) {
             tClient.closeConnection();
+            tClient.interrupt();
             Server.getInstance().removeClient(tClient.getClient().getIdUser());
             tClient = null;
         }
